@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 
 const VIDEOS = [
   {
@@ -42,6 +43,13 @@ const VIDEOS = [
 
 const N = VIDEOS.length;
 const CARD_GAP = 290;
+
+const springConfig = {
+  type: "spring" as const,
+  stiffness: 160,
+  damping: 24,
+  mass: 0.8,
+};
 
 function getPosition(cardIndex: number, activeIndex: number): number {
   let offset = cardIndex - activeIndex;
@@ -114,17 +122,13 @@ export default function VideoCarousel() {
             const skipTransition = wrapIndex === i;
 
             return (
-              <div
+              <motion.div
                 key={video.id}
-                className={`absolute left-1/2 top-1/2 will-change-transform ${
-                  skipTransition
-                    ? ""
-                    : "transition-transform duration-[500ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
-                }`}
-                style={{
-                  transform: `translate(-50%, -50%) translateX(${pos}px)`,
-                  zIndex: i === activeIndex ? 10 : 1,
-                }}
+                className="absolute"
+                style={{ left: "50%", top: "50%", zIndex: i === activeIndex ? 10 : 1 }}
+                animate={{ x: `calc(-50% + ${pos}px)`, y: "-50%" }}
+                initial={false}
+                transition={skipTransition ? { duration: 0 } : springConfig}
               >
                 <div
                   role="button"
@@ -198,7 +202,7 @@ export default function VideoCarousel() {
                     </svg>
                   </button>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
