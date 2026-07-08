@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-veed-green: #96FF1A;
+  --color-veed-green-light: #E6FFC8;
+  --color-veed-dark: #121212;
+  --color-veed-gray: #323232;
+  --color-veed-muted: #79716B;
+  --color-veed-bg: #ECEEEE;
+  --animate-marquee: marquee var(--marquee-duration, 39s) linear infinite;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes carousel-progress {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  background: #ffffff;
+  color: #121212;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
