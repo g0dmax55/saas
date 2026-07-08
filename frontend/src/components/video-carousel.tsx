@@ -89,7 +89,7 @@ export default function VideoCarousel() {
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
-        <div className="relative flex items-center justify-center h-[420px] md:h-[540px]">
+        <div className="relative h-[420px] w-full md:h-[540px]">
           {VIDEOS.map((video, i) => {
             const pos = getPosition(i);
             const isActive = i === activeIndex;
@@ -97,10 +97,9 @@ export default function VideoCarousel() {
             return (
               <div
                 key={video.id}
-                className="flex-none transition-transform duration-[500ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] will-change-transform"
+                className="absolute left-1/2 top-1/2 flex-none transition-transform duration-[500ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] will-change-transform"
                 style={{
-                  position: i === 0 ? "relative" : "absolute",
-                  transform: `translateX(${pos}px)`,
+                  transform: `translate(-50%, -50%) translateX(${pos}px)`,
                   zIndex: 10 - Math.abs(i - activeIndex),
                 }}
               >
