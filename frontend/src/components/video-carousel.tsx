@@ -66,8 +66,12 @@ export default function VideoCarousel() {
   const videosRef = useRef<(HTMLVideoElement | null)[]>([]);
   const activeRef = useRef(activeIndex);
   activeRef.current = activeIndex;
+  const lastAdvanceRef = useRef(0);
 
   const goNext = useCallback(() => {
+    const now = Date.now();
+    if (now - lastAdvanceRef.current < 600) return;
+    lastAdvanceRef.current = now;
     const prev = activeRef.current;
     const wrappingCard = (prev + 3) % N;
     const next = (prev + 1) % N;
@@ -96,6 +100,10 @@ export default function VideoCarousel() {
     if (video) {
       video.currentTime = 0;
       video.play().catch(() => {});
+
+      const onEnded = () => goNextRef.current();
+      video.addEventListener("ended", onEnded);
+      return () => video.removeEventListener("ended", onEnded);
     }
     VIDEOS.forEach((_, i) => {
       if (i !== activeIndex && videosRef.current[i]) {
