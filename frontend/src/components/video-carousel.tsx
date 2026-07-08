@@ -40,73 +40,65 @@ const VIDEOS = [
   },
 ];
 
-const ALL_VIDEOS = [...VIDEOS, ...VIDEOS, ...VIDEOS];
 const N = VIDEOS.length;
-const START = N;
-const RESET = START + N;
-const SLIDE_DURATION = 500;
+const CARD_GAP = 290;
+
+function getPosition(cardIndex: number, activeIndex: number): number {
+  let offset = cardIndex - activeIndex;
+  if (offset < -2) offset += N;
+  if (offset > 2) offset -= N;
+  return offset * CARD_GAP;
+}
 
 export default function VideoCarousel() {
-  const [slideIndex, setSlideIndex] = useState(START);
-  const [shouldTransition, setShouldTransition] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(2);
+  const [wrapIndex, setWrapIndex] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [muted, setMuted] = useState(true);
   const videosRef = useRef<(HTMLVideoElement | null)[]>([]);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const activeRef = useRef(activeIndex);
+  activeRef.current = activeIndex;
 
   const goNext = useCallback(() => {
-    setShouldTransition(true);
-    setSlideIndex((prev) => (prev >= RESET ? RESET : prev + 1));
+    const prev = activeRef.current;
+    const wrappingCard = (prev + 3) % N;
+    const next = (prev + 1) % N;
+    setWrapIndex(wrappingCard);
+    activeRef.current = next;
+    setActiveIndex(next);
   }, []);
 
   useEffect(() => {
-    if (slideIndex === RESET) {
-      const t = setTimeout(() => {
-        setShouldTransition(false);
-        setSlideIndex(START);
-      }, SLIDE_DURATION + 50);
-      return () => clearTimeout(t);
-    }
-    if (!shouldTransition) {
-      const id = requestAnimationFrame(() => {
-        setShouldTransition(true);
-      });
-      return () => cancelAnimationFrame(id);
-    }
-  }, [slideIndex]);
+    if (wrapIndex === null) return;
+    const t = setTimeout(() => setWrapIndex(null), 550);
+    return () => clearTimeout(t);
+  }, [wrapIndex]);
 
   const goNextRef = useRef(goNext);
   goNextRef.current = goNext;
 
   useEffect(() => {
     if (isPaused) return;
-    timerRef.current = setInterval(() => goNextRef.current(), 8000);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+    const id = setInterval(() => goNextRef.current(), 8000);
+    return () => clearInterval(id);
   }, [isPaused]);
 
-  const activeVideoIdx = slideIndex % N;
-
   useEffect(() => {
-    const activeEl = videosRef.current[slideIndex];
-    if (activeEl) {
-      activeEl.currentTime = 0;
-      activeEl.play().catch(() => {});
+    const video = videosRef.current[activeIndex];
+    if (video) {
+      video.currentTime = 0;
+      video.play().catch(() => {});
     }
-    ALL_VIDEOS.forEach((_, i) => {
-      if (i !== slideIndex && videosRef.current[i]) {
+    VIDEOS.forEach((_, i) => {
+      if (i !== activeIndex && videosRef.current[i]) {
         videosRef.current[i]!.pause();
       }
     });
-  }, [slideIndex]);
-
-  const getPosition = (i: number) => (i - slideIndex) * 290;
+  }, [activeIndex]);
 
   const handleCardClick = (clickedIndex: number) => {
-    const videoIdx = clickedIndex % N;
-    const target = START + videoIdx;
-    setShouldTransition(true);
-    setSlideIndex(target);
+    activeRef.current = clickedIndex;
+    setActiveIndex(clickedIndex);
   };
 
   return (
@@ -117,22 +109,21 @@ export default function VideoCarousel() {
         onMouseLeave={() => setIsPaused(false)}
       >
         <div className="relative h-[420px] w-full md:h-[540px]">
-          {ALL_VIDEOS.map((video, i) => {
-            const dist = Math.abs(i - slideIndex);
-            const withinView = dist <= 5;
+          {VIDEOS.map((video, i) => {
+            const pos = getPosition(i, activeIndex);
+            const skipTransition = wrapIndex === i;
 
             return (
               <div
-                key={`${video.id}-${i}`}
+                key={video.id}
                 className={`absolute left-1/2 top-1/2 will-change-transform ${
-                  shouldTransition
-                    ? "transition-transform duration-[500ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
-                    : ""
+                  skipTransition
+                    ? ""
+                    : "transition-transform duration-[500ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
                 }`}
                 style={{
-                  transform: `translate(-50%, -50%) translateX(${getPosition(i)}px)`,
-                  zIndex: 10 - Math.min(dist, 10),
-                  visibility: withinView ? "visible" : "hidden",
+                  transform: `translate(-50%, -50%) translateX(${pos}px)`,
+                  zIndex: i === activeIndex ? 10 : 1,
                 }}
               >
                 <div
@@ -141,11 +132,17 @@ export default function VideoCarousel() {
                   aria-label={`Select ${video.label} example`}
                   className="group relative h-[380px] w-[242px] cursor-pointer overflow-hidden rounded-2xl bg-neutral-900 md:h-[503px] md:w-[282px]"
                   onClick={() => handleCardClick(i)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setActiveIndex(i);
+                    }
+                  }}
                 >
                   <video
                     ref={(el) => { videosRef.current[i] = el; }}
                     poster={video.poster}
-                    muted
+                    muted={muted}
                     playsInline
                     preload="metadata"
                     className="absolute inset-0 h-full w-full rounded-2xl bg-neutral-900 object-cover"
@@ -174,6 +171,7 @@ export default function VideoCarousel() {
                   >
                     <button
                       type="button"
+                      aria-label={`Use ${video.label} style`}
                       className="pointer-events-auto flex h-8 cursor-pointer items-center justify-center rounded-[58px] bg-[#96ff1a] px-3 py-2"
                     >
                       <span className="whitespace-nowrap text-[#262525] text-[13px] leading-[1.4]">
@@ -184,7 +182,11 @@ export default function VideoCarousel() {
 
                   <button
                     type="button"
-                    aria-label="Unmute video"
+                    aria-label={muted ? "Unmute video" : "Mute video"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMuted((prev) => !prev);
+                    }}
                     className="absolute top-2.5 right-2.5 z-10 flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-white/90 text-neutral-900 opacity-0 transition-opacity group-hover:opacity-100"
                     style={{
                       boxShadow:
@@ -207,8 +209,8 @@ export default function VideoCarousel() {
           <div className="w-[68px]" />
           <div className="flex items-center gap-[2px]">
             {VIDEOS.map((_, i) =>
-              i === activeVideoIdx ? (
-                <div key={`bar-${slideIndex}`} className="p-[6px]">
+              i === activeIndex ? (
+                <div key={`bar-${activeIndex}`} className="p-[6px]">
                   <div className="h-1 w-10 overflow-hidden rounded-sm bg-[rgba(18,18,18,0.12)]">
                     <div
                       className="h-1 rounded-sm bg-[#121212]"
