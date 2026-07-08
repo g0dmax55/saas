@@ -82,7 +82,7 @@ function ChipLink({ children }: { children: string }) {
 
 export default function DiscoverMore() {
   return (
-    <section id="discover-more-section" className="mt-24">
+    <section id="discover-more-section" className="mt-24 pb-20 md:pb-28">
       <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center gap-10 px-6 md:px-10 xl:px-0">
         <div className="flex flex-col items-center gap-4">
           <p className="font-semibold text-[#121212] text-xs uppercase leading-[21.6px]">

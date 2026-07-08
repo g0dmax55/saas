@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function G2Badges() {
   return (
-    <section className="mx-auto mt-24 w-full max-w-[1200px] px-2 md:px-6 lg:max-w-[845px] lg:px-0 xl:max-w-[1200px]">
+    <section className="mx-auto mt-24 w-full max-w-[1200px] px-2 pb-16 md:px-6 lg:max-w-[845px] lg:px-0 xl:max-w-[1200px]">
       <div className="relative flex flex-col items-center gap-[31px] overflow-hidden rounded-2xl bg-[#121212] py-10">
         <Image
           src="https://cdn-site-assets.veed.io/g2_section_bg_mobile_321fc34e2d/g2_section_bg_mobile_321fc34e2d.webp"

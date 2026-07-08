@@ -14,7 +14,7 @@ export default function Home() {
     <div className="relative">
       <Navbar />
       <main className="mx-auto max-w-[1920px]">
-        <div className="mb-20 flex w-full flex-col overflow-hidden md:mb-[120px]">
+        <div className="mb-16 flex w-full flex-col overflow-hidden">
           <div className="mx-auto max-w-screen-2xl md:px-6 xl:max-w-[1408px] xl:px-0">
             <HeroSection />
           </div>
