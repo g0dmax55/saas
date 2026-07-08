@@ -51,38 +51,38 @@ export default function BrandUseCases() {
     <section id="brand-use-cases-section" className="bg-[#121212] px-4 py-20 sm:px-8 md:px-[120px] md:py-[100px]">
       <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-10 md:gap-12">
         <h2 className="max-w-[320px] text-balance text-center font-normal text-white text-[34px] leading-[88%] tracking-[-1.7px] sm:max-w-[580px] sm:text-[54px] sm:tracking-[-2.7px]">
-          Generate videos that look like{" "}
-          <span className="font-serif italic font-normal">your brand,</span> not AI
+          Subtitles that make your videos&nbsp;
+          <span className="font-serif italic font-normal">unskippable</span>
         </h2>
 
         <div className="hidden w-full md:grid grid-cols-2 gap-6">
           <a href="#" className="group relative row-span-2 flex min-h-[800px] cursor-pointer flex-col items-start justify-end overflow-hidden rounded-2xl bg-[#1a1a1a] transition-transform hover:scale-[1.01]">
             <video src={GENERATE_VIDEO} poster={GENERATE_POSTER} autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover object-top" />
-            <div className="absolute top-4 left-4 z-10 rounded-[4px] bg-black/40 px-2 py-2 font-medium text-[12px] text-white leading-none backdrop-blur-[12px]">Generate</div>
+            <div className="absolute top-4 left-4 z-10 rounded-[4px] bg-black/40 px-2 py-2 font-medium text-[12px] text-white leading-none backdrop-blur-[12px]">Upload</div>
             <button type="button" className="absolute top-3 right-3 z-10 flex size-8 items-center justify-center rounded-lg bg-white/90 text-neutral-900 shadow-sm opacity-0 transition-opacity group-hover:opacity-100">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" d="m7.733 4.505 2.288-1.657c.521-.421 1.312-.062 1.312.597v3.002m0 3.553v2.555c0 .659-.79 1.018-1.312.597L6.533 10.33h-.8c-1.325 0-2.4-1.043-2.4-2.33 0-.996.314-1.47.8-1.942M1.333 4l13.334 8" /></svg>
             </button>
-            <CardContent title="Generate videos in minutes." subtitle="Turn any idea into a video worth posting — no camera needed" />
+            <CardContent title="Drop your reel, short, or TikTok video." subtitle="Supports all major short-form video formats. Drag, drop, done." />
           </a>
 
           <a href="#" className="group relative flex min-h-[380px] cursor-pointer flex-col items-start justify-end overflow-hidden rounded-2xl bg-[#1a1a1a] transition-transform hover:scale-[1.01]">
             <img src={SUBTITLES_IMAGE} alt="" className="absolute inset-0 h-full w-full object-cover object-top" />
-            <div className="absolute top-4 left-4 z-10 rounded-[4px] bg-black/40 px-2 py-2 font-medium text-[12px] text-white leading-none backdrop-blur-[12px]">Subtitles</div>
-            <CardContent title="Keep people watching." subtitle="The best subtitles on the internet — designed to make your videos unskippable." />
+            <div className="absolute top-4 left-4 z-10 rounded-[4px] bg-black/40 px-2 py-2 font-medium text-[12px] text-white leading-none backdrop-blur-[12px]">Detect &amp; Transcribe</div>
+            <CardContent title="Auto-detect language, generate accurate transcript." subtitle="40+ languages supported. Word-level precision with 99% accuracy." />
           </a>
 
           <a href="#" className="group relative flex min-h-[380px] cursor-pointer flex-col items-start justify-end overflow-hidden rounded-2xl bg-[#1a1a1a] transition-transform hover:scale-[1.01]">
             <img src={BRAND_IMAGE} alt="" className="absolute inset-0 h-full w-full object-cover object-top" />
-            <div className="absolute top-4 left-4 z-10 rounded-[4px] bg-black/40 px-2 py-2 font-medium text-[12px] text-white leading-none backdrop-blur-[12px]">Brand</div>
-            <CardContent title="Make every video look like your brand." subtitle="Your colours, fonts, logos and voice — applied instantly, every time." />
+            <div className="absolute top-4 left-4 z-10 rounded-[4px] bg-black/40 px-2 py-2 font-medium text-[12px] text-white leading-none backdrop-blur-[12px]">Style &amp; Burn</div>
+            <CardContent title="Choose from dozens of designs, burn into video." subtitle="Dynamic, animated, gradient, and custom styles. Export in one click." />
           </a>
         </div>
 
         <div className="flex flex-col gap-6 md:hidden w-full">
           {[
-            { id: "generate", label: "Generate", image: MOBILE_POSTER, isVideo: true, title: "Generate videos in minutes.", subtitle: "Turn any idea into a video worth posting — no camera needed" },
-            { id: "subtitles", label: "Subtitles", image: SUBTITLES_IMAGE, isVideo: false, title: "Keep people watching.", subtitle: "The best subtitles on the internet — designed to make your videos unskippable." },
-            { id: "brand", label: "Brand", image: BRAND_IMAGE, isVideo: false, title: "Make every video look like your brand.", subtitle: "Your colours, fonts, logos and voice — applied instantly, every time." },
+            { id: "upload", label: "Upload", image: MOBILE_POSTER, isVideo: true, title: "Drop your reel, short, or TikTok video.", subtitle: "Supports all major short-form video formats. Drag, drop, done." },
+            { id: "detect", label: "Detect & Transcribe", image: SUBTITLES_IMAGE, isVideo: false, title: "Auto-detect language, generate accurate transcript.", subtitle: "40+ languages supported. Word-level precision with 99% accuracy." },
+            { id: "burn", label: "Style & Burn", image: BRAND_IMAGE, isVideo: false, title: "Choose from dozens of designs, burn into video.", subtitle: "Dynamic, animated, gradient, and custom styles. Export in one click." },
           ].map((card) => (
             <a key={card.id} href="#" className="group relative flex aspect-[9/16] max-h-[648px] cursor-pointer flex-col items-start justify-end overflow-hidden rounded-2xl bg-[#1a1a1a]">
               {card.isVideo ? (

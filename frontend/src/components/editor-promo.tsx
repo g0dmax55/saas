@@ -25,10 +25,10 @@ export default function EditorPromo() {
 
       <div className="relative mx-auto flex max-w-[1920px] flex-col items-center xl:max-w-[1408px]">
         <h2 className="mx-auto max-w-[800px] text-pretty text-center font-medium text-[#262525] text-[32px] leading-none tracking-[-1.6px] md:text-[40px] md:tracking-[-2px]">
-          Generate{" "}
-          <span className="font-serif italic font-normal">feed-ready</span>{" "}
-          videos that get
-          <br className="hidden md:block" /> your business seen
+          Style{" "}
+          <span className="font-serif italic font-normal">subtitles</span>{" "}
+          that get your
+          <br className="hidden md:block" /> feed noticed
         </h2>
 
         <div className="relative mt-8 w-full max-w-[845px]">

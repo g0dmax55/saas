@@ -1,27 +1,27 @@
 const FOOTER_COLS = [
   {
-    heading: "Video Editor",
+    heading: "Subtitle Tools",
     links: [
-      "Add Music to Video", "Add Subtitles to Video", "Add Text to Video",
-      "Audio to Text", "Auto Subtitle Generator", "Video Caption Generator",
-      "Video Compressor", "Video Converter", "Video to Text", "Video Translator",
+      "AI Subtitle Generator", "Auto Captions", "Animated Subtitles",
+      "Word Highlight", "Dynamic Styles", "Gradient Subtitles",
+      "Emoji Subtitles", "Multi-Language", "Transcript Export", "SRT/VTT Download",
     ],
   },
   {
-    heading: "AI Tools",
+    heading: "AI Features",
     links: [
-      "AI Video", "Fabric 1.0 API", "AI Avatars", "AI Image Generator",
-      "Video Background Remover", "Remove Background Noise from Video",
-      "Remove Background Noise from Audio", "Voice Dubber", "AI Voice Generator",
-      "Eye Contact AI", "Text to Speech Video",
+      "Language Detection", "Speech to Text", "Auto Translation",
+      "Noise Reduction", "Audio Extraction", "Speaker Detection",
+      "Custom Fonts", "Subtitle Positioning", "Timeline Editor",
+      "Burn to Video", "Batch Processing",
     ],
   },
   {
-    heading: "AI Playground",
+    heading: "Styles",
     links: [
-      "Fabric 1.0", "Kling O1", "Sora 2", "Sora 2 Pro", "VEO 3.1",
-      "VEO 3.1 Fast", "VEO 3", "VEO 3 Fast", "Seedance 1.0", "VEO 2",
-      "PixVerse AI", "MiniMax Video 01", "LTX Video", "Kling AI",
+      "Clean", "Bold", "Dynamic", "Minimal", "Gradient",
+      "Karaoke", "Typewriter", "Neon", "Shadow", "Outline",
+      "Custom CSS", "Brand Templates", "Preset Library", "Dark Mode Subtitles",
     ],
   },
   {
@@ -29,18 +29,16 @@ const FOOTER_COLS = [
     links: ["Pricing", "Enterprise"],
     subheading: "Resources",
     sublinks: [
-      "VEED Blog", "Articles", "Webinars", "Video Guides",
-      "VEED Alternatives", "CapCut Alternatives",
-      "Kling O1 AI Video Guide", "Science of Great Video Report",
-      "The Ultimate Guide to Video Marketing",
+      "Blog", "Help Center", "API Docs",
+      "Video Guides", "Templates", "Changelog",
+      "Community", "Affiliate Program",
     ],
   },
   {
     heading: "Company",
     links: [
-      "About VEED", "Jobs", "Privacy", "Terms", "Cookies",
-      "Contact Support", "Affiliate Program", "Media Enquiries",
-      "Trust Center", "Newsroom",
+      "About", "Careers", "Privacy", "Terms", "Cookies",
+      "Contact", "Media Kit", "Status",
     ],
     subheading: "Connect",
     sublinks: ["X / Twitter", "YouTube", "Instagram", "TikTok", "Email"],
@@ -91,7 +89,7 @@ export default function Footer() {
         </div>
 
         <p className="mt-8 text-gray-400 text-sm">
-          © Copyright 2026 VEED
+          © Copyright 2026 Subtitle Studio
         </p>
       </div>
     </footer>

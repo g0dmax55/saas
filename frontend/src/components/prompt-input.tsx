@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { motion } from "framer-motion";
 
 const PRESETS = [
-  { label: "Explainer", prompt: "Create an animated explainer video about..." },
-  { label: "Product Demo", prompt: "Showcase a product feature that..." },
-  { label: "Ad", prompt: "Create a short ad for..." },
-  { label: "Tutorial", prompt: "Record a step-by-step tutorial on..." },
+  { label: "Clean", prompt: "Clean minimal subtitles for professional videos..." },
+  { label: "Bold", prompt: "Bold eye-catching captions for short-form content..." },
+  { label: "Dynamic", prompt: "Animated word-by-word subtitle effects..." },
+  { label: "Gradient", prompt: "Colorful gradient subtitle styles for reels..." },
 ];
 
 export default function PromptInput() {
@@ -44,20 +43,20 @@ export default function PromptInput() {
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <g>
-              <path
-                d="M10.6954 8.59015L8.68075 9.89049C8.66489 9.89049 8.66489 9.90831 8.64902 9.90831L6.63435 11.2086C6.53917 11.2799 6.41226 11.3333 6.28535 11.3333C5.95221 11.3333 5.66667 11.0305 5.66667 10.6386V5.34821C5.66667 5.22352 5.69839 5.11665 5.74599 5.00977C5.92048 4.68914 6.28535 4.56445 6.58676 4.76039L8.63316 6.07854L10.6637 7.39669C10.7589 7.45013 10.8382 7.5392 10.9017 7.64607C11.092 7.98452 10.9968 8.41203 10.6954 8.59015Z"
-                stroke={activeTab === "create" ? "#083300" : "currentColor"}
-                strokeLinecap="round"
-              />
-              <path
-                d="M1 4C1 2.34315 2.34315 1 4 1H12C13.6569 1 15 2.34315 15 4V12C15 13.6569 13.6569 15 12 15H4C2.34315 15 1 13.6569 1 12V4Z"
-                stroke={activeTab === "create" ? "#083300" : "currentColor"}
-                strokeLinecap="round"
-              />
-            </g>
+            <path
+              d="M2 4C2 3.44772 2.44772 3 3 3H8L9.5 5H13C13.5523 5 14 5.44772 14 6V12C14 12.5523 13.5523 13 13 13H3C2.44772 13 2 12.5523 2 12V4Z"
+              stroke={activeTab === "create" ? "#083300" : "currentColor"}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M6 8.5L7.5 10L10 7"
+              stroke={activeTab === "create" ? "#083300" : "currentColor"}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
-          <span>Create AI video</span>
+          <span>Add Subtitles</span>
         </button>
         <button
           type="button"
@@ -79,29 +78,28 @@ export default function PromptInput() {
               fill={activeTab === "edit" ? "#083300" : "rgba(0,0,0,0.7)"}
             />
           </svg>
-          <span>AI Edit</span>
+          <span>Style &amp; Burn</span>
         </button>
       </div>
 
       <div className="relative z-20 flex justify-center" style={{ height: 134 }}>
         <div className="absolute top-0 flex w-[712px] max-w-full flex-col items-center justify-center gap-4">
           <div className="flex w-full px-4">
-            <motion.form
+            <form
               onSubmit={handleSubmit}
               className="group mx-auto flex w-full flex-col overflow-hidden rounded-4xl bg-white/90 ring-1 ring-[#B6FF60] backdrop-blur-[6px]"
               style={{
                 boxShadow:
                   "0 4px 8px 0 rgba(25, 25, 25, 0.03), 0 10px 20px -18px rgba(25, 25, 25, 0.05)",
               }}
-              whileFocus={{ boxShadow: "0 0 0 2px rgba(150, 255, 26, 0.3)" }}
             >
               <textarea
                 ref={textareaRef}
                 className="resize-none overflow-y-auto border-none bg-transparent pt-5 pr-3 pb-1.5 pl-6 text-[#121212] ring-0 outline-none placeholder:text-gray-400"
                 placeholder={
                   activeTab === "create"
-                    ? "Describe the video you want to create..."
-                    : "Paste a video link or describe what to edit..."
+                    ? "Paste a video link or upload a short video..."
+                    : "Choose a subtitle style and customize..."
                 }
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
@@ -114,6 +112,7 @@ export default function PromptInput() {
                       type="button"
                       className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-gray-100 bg-white transition hover:bg-gray-50"
                       onClick={() => setShowPresets(!showPresets)}
+                      title="Upload video"
                     >
                       <svg
                         stroke="currentColor"
@@ -163,13 +162,13 @@ export default function PromptInput() {
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        d="M11.2222 13.5V12.2222C11.2222 11.5444 10.953 10.8944 10.4737 10.4152C9.99446 9.93591 9.34444 9.66667 8.66667 9.66667H3.55556C2.87778 9.66667 2.22776 9.93591 1.7485 10.4152C1.26925 10.8944 1 11.5444 1 12.2222V13.5M13.6073 2.63889C14.5346 3.4862 15.0556 4.63524 15.0556 5.83333C15.0556 7.03143 14.5346 8.18047 13.6073 9.02778M11.5417 4.23611C12.0053 4.65977 12.2658 5.23429 12.2658 5.83333C12.2658 6.43238 12.0053 7.0069 11.5417 7.43056M8.66667 4.55556C8.66667 5.96695 7.52251 7.11111 6.11111 7.11111C4.69972 7.11111 3.55556 5.96695 3.55556 4.55556C3.55556 3.14416 4.69972 2 6.11111 2C7.52251 2 8.66667 3.14416 8.66667 4.55556Z"
+                        d="M2 4C2 2.89543 2.89543 2 4 2H12C13.1046 2 14 2.89543 14 4V12C14 13.1046 13.1046 14 12 14H4C2.89543 14 2 13.1046 2 12V4Z"
                         stroke="#444446"
                         strokeLinecap="round"
-                        strokeLinejoin="round"
                       />
+                      <path d="M6 8L8 10L10 6" stroke="#444446" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    Character
+                    Choose Style
                     <svg
                       stroke="currentColor"
                       fill="none"
@@ -214,7 +213,7 @@ export default function PromptInput() {
                   </button>
                 </div>
               </div>
-            </motion.form>
+            </form>
           </div>
         </div>
       </div>

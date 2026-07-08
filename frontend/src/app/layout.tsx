@@ -8,9 +8,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AI Video Creation Platform | Idea to Video Workflow",
-  description:
-    "Generate and edit in one workflow. Create talking heads, edit with AI, dub videos, and add subtitles — all in one platform.",
+    title: "AI-Powered Subtitles for Short Videos | Subtitle Studio",
+    description:
+      "Upload short videos, auto-detect language, generate accurate subtitles, and burn them into your reels, shorts, and TikToks with dozens of beautiful styles.",
 };
 
 export default function RootLayout({

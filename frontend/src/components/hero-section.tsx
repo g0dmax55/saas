@@ -24,11 +24,11 @@ export default function HeroSection() {
               <span>5 star reviews</span>
             </div>
             <h1 className="mt-3 w-full max-w-[20rem] text-pretty text-center font-medium text-[#121212] text-[40px] leading-[88%] tracking-[-2px] md:max-w-none md:text-[44px] md:tracking-[-1.76px]">
-              AI video creation, made for social
+              AI-Powered Subtitles, made for social
             </h1>
             <p className="mt-6 text-pretty text-center font-normal text-[#79716B] text-[16px] leading-none tracking-[-0.08px]">
-              Imagine it. Generate it. Brand it. AI videos worth posting, in
-              minutes.
+              Upload. Detect. Transcribe. Burn. Professional subtitles worth
+              posting, in minutes.
             </p>
           </div>
         </div>
