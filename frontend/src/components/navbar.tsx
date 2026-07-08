@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const NAV_LINKS = [
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Styles", href: "#styles" },
+  { label: "Product", href: "/#features" },
+  { label: "Templates", href: "/#templates" },
+  { label: "Use Cases", href: "/#use-cases" },
   { label: "Pricing", href: "/pricing" },
 ];
 

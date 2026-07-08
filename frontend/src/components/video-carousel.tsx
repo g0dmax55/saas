@@ -111,7 +111,7 @@ export default function VideoCarousel() {
   };
 
   return (
-    <section id="styles" className="relative w-full">
+    <section id="templates" className="relative w-full">
       <div
         className="flex justify-center overflow-hidden"
       >
@@ -174,11 +174,11 @@ export default function VideoCarousel() {
                   >
                     <button
                       type="button"
-                      aria-label={`Use ${video.label} style`}
+                      aria-label={`Use ${video.label} template`}
                       className="pointer-events-auto flex h-8 cursor-pointer items-center justify-center rounded-[58px] bg-[#96ff1a] px-3 py-2"
                     >
                       <span className="whitespace-nowrap text-[#262525] text-[13px] leading-[1.4]">
-                        Use this style
+                        Use this template
                       </span>
                     </button>
                   </div>

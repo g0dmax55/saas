@@ -1,7 +1,7 @@
 export default function EditorPromo() {
   return (
     <section
-      id="editor-promo-section"
+      id="features"
       className="relative w-full overflow-y-clip bg-white px-[11px] pt-[80px] pb-[80px] md:px-6 md:pt-[100px] md:pb-24 xl:px-4 min-[1440px]:px-0"
     >
       <div

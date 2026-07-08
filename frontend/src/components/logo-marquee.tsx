@@ -81,6 +81,18 @@ const LOGOS = [
     w: 97.031,
     h: 54,
   },
+  {
+    src: "/axinor-tech.png?v=4",
+    alt: "Axinor Technologies logo",
+    w: 150.5,
+    h: 25,
+  },
+  {
+    src: "/axinor.png?v=2",
+    alt: "Axinor Security logo",
+    w: 150.5,
+    h: 25,
+  },
 ];
 
 export default function LogoMarquee() {

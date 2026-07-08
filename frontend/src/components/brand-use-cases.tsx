@@ -54,7 +54,7 @@ export default function BrandUseCases() {
   const [muted, setMuted] = useState(true);
 
   return (
-    <section id="how-it-works" className="bg-[#121212] px-4 py-20 sm:px-8 md:px-[120px] md:py-[100px]">
+    <section id="use-cases" className="bg-[#121212] px-4 py-20 sm:px-8 md:px-[120px] md:py-[100px]">
       <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-10 md:gap-12">
         <h2 className="max-w-[320px] text-balance text-center font-normal text-white text-[34px] leading-[88%] tracking-[-1.7px] sm:max-w-[580px] sm:text-[54px] sm:tracking-[-2.7px]">
           Subtitles that make your videos&nbsp;

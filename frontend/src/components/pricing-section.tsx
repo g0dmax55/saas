@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LogoMarquee from "./logo-marquee";
 
 const PLANS = [
   {
@@ -58,6 +59,7 @@ const PLANS = [
     description: "For teams and agencies.",
     features: [
       "Everything in Pro",
+      "4K export quality",
       "5 team members",
       "Branded style kits",
       "Priority support",
@@ -98,8 +100,9 @@ export default function PricingSection() {
     annual ? plan.yearlyPrice : plan.monthlyPrice;
 
   return (
-    <section className="py-16 md:py-[100px]">
-      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+    <>
+      <section className="pt-16 md:pt-[100px] pb-0">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         {/* Header */}
         <div className="text-center">
           <h2 className="text-2xl font-semibold tracking-tight text-[#121212] sm:text-3xl md:text-4xl">
@@ -228,9 +231,15 @@ export default function PricingSection() {
             </div>
           ))}
         </div>
+      </div>
+    </section>
 
+    <LogoMarquee />
+
+    <section className="pb-16 md:pb-[100px] pt-0">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         {/* Feature comparison table */}
-        <div className="mt-16 md:mt-24">
+        <div className="mt-10 md:mt-16">
           <h3 className="text-center text-xl font-semibold text-[#121212] md:text-2xl">
             Compare plans
           </h3>
@@ -251,7 +260,7 @@ export default function PricingSection() {
                   { label: "Subtitle styles", free: "3", pro: "20+", business: "20+" },
                   { label: "Word-by-word animation", free: "—", pro: "✓", business: "✓" },
                   { label: "Auto language detection", free: "✓", pro: "✓", business: "✓" },
-                  { label: "Export quality", free: "720p", pro: "1080p", business: "1080p" },
+                  { label: "Export quality", free: "720p", pro: "1080p", business: "4K" },
                   { label: "Watermark", free: "Yes", pro: "No", business: "No" },
                   { label: "Custom fonts", free: "—", pro: "—", business: "✓" },
                   { label: "Brand kit", free: "—", pro: "—", business: "✓" },
@@ -276,17 +285,17 @@ export default function PricingSection() {
         </div>
 
         {/* FAQ */}
-        <div className="mt-16 md:mt-24">
-          <h3 className="text-center text-xl font-semibold text-[#121212] md:text-2xl">
+        <div className="mt-20 md:mt-32">
+          <h3 className="text-center text-2xl font-bold tracking-tight text-[#121212] md:text-3xl">
             Frequently asked questions
           </h3>
-          <div className="mx-auto mt-8 max-w-2xl divide-y divide-gray-200">
+          <div className="mx-auto mt-10 max-w-3xl divide-y divide-gray-200">
             {FAQ.map((item) => (
-              <details key={item.q} className="group py-4">
-                <summary className="flex cursor-pointer items-center justify-between text-sm font-medium text-[#121212]">
+              <details key={item.q} className="group py-5 md:py-6">
+                <summary className="flex cursor-pointer items-center justify-between text-base font-semibold text-[#121212] md:text-lg">
                   {item.q}
                   <svg
-                    className="h-4 w-4 shrink-0 text-[#79716B] transition-transform group-open:rotate-180"
+                    className="h-5 w-5 shrink-0 text-[#79716B] transition-transform group-open:rotate-180"
                     viewBox="0 0 16 16"
                     fill="none"
                     stroke="currentColor"
@@ -297,7 +306,7 @@ export default function PricingSection() {
                     <path d="M4 6l4 4 4-4" />
                   </svg>
                 </summary>
-                <p className="mt-2 text-sm leading-relaxed text-[#79716B]">
+                <p className="mt-3 text-sm leading-relaxed text-[#79716B] md:text-[15px]">
                   {item.a}
                 </p>
               </details>
@@ -306,5 +315,7 @@ export default function PricingSection() {
         </div>
       </div>
     </section>
+  </>
   );
 }
+
