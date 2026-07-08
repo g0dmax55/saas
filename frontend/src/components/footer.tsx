@@ -2,13 +2,13 @@ const FOOTER_COLS = [
   {
     heading: "Subtitle Tools",
     links: [
-      "AI Subtitle Generator", "Auto Captions", "Animated Subtitles",
+      "Subtitle Generator", "Auto Captions", "Animated Subtitles",
       "Word Highlight", "Dynamic Styles", "Gradient Subtitles",
       "Emoji Subtitles", "Multi-Language", "Transcript Export", "SRT/VTT Download",
     ],
   },
   {
-    heading: "AI Features",
+    heading: "Smart Features",
     links: [
       "Language Detection", "Speech to Text", "Auto Translation",
       "Noise Reduction", "Audio Extraction", "Speaker Detection",

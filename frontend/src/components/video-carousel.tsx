@@ -61,7 +61,6 @@ function getPosition(cardIndex: number, activeIndex: number): number {
 export default function VideoCarousel() {
   const [activeIndex, setActiveIndex] = useState(2);
   const [wrapIndex, setWrapIndex] = useState<number | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
   const [muted, setMuted] = useState(true);
   const videosRef = useRef<(HTMLVideoElement | null)[]>([]);
   const activeRef = useRef(activeIndex);
@@ -90,12 +89,6 @@ export default function VideoCarousel() {
   goNextRef.current = goNext;
 
   useEffect(() => {
-    if (isPaused) return;
-    const id = setInterval(() => goNextRef.current(), 8000);
-    return () => clearInterval(id);
-  }, [isPaused]);
-
-  useEffect(() => {
     const video = videosRef.current[activeIndex];
     if (video) {
       video.currentTime = 0;
@@ -121,8 +114,6 @@ export default function VideoCarousel() {
     <section className="relative w-full">
       <div
         className="flex justify-center overflow-hidden"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
       >
         <div className="relative h-[420px] w-full md:h-[540px]">
           {VIDEOS.map((video, i) => {
@@ -224,13 +215,7 @@ export default function VideoCarousel() {
               i === activeIndex ? (
                 <div key={`bar-${activeIndex}`} className="p-[6px]">
                   <div className="h-1 w-10 overflow-hidden rounded-sm bg-[rgba(18,18,18,0.12)]">
-                    <div
-                      className="h-1 rounded-sm bg-[#121212]"
-                      style={{
-                        animation: `carousel-progress 8000ms linear forwards`,
-                        animationPlayState: isPaused ? "paused" : "running",
-                      }}
-                    />
+                    <div className="h-1 w-10 rounded-sm bg-[#121212]" />
                   </div>
                 </div>
               ) : (

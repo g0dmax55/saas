@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-    title: "AI-Powered Subtitles for Short Videos | Subtitle Studio",
+    title: "Instant Subtitles for Short Videos | Subtitle Studio",
     description:
       "Upload short videos, auto-detect language, generate accurate subtitles, and burn them into your reels, shorts, and TikToks with dozens of beautiful styles.",
 };

@@ -1,6 +1,5 @@
 import Navbar from "@/components/navbar";
 import HeroSection from "@/components/hero-section";
-import HowItWorks from "@/components/how-it-works";
 import VideoCarousel from "@/components/video-carousel";
 import LogoMarquee from "@/components/logo-marquee";
 import BrandUseCases from "@/components/brand-use-cases";
@@ -19,7 +18,6 @@ export default function Home() {
           <div className="mx-auto max-w-screen-2xl md:px-6 xl:max-w-[1408px] xl:px-0">
             <HeroSection />
           </div>
-          <HowItWorks />
           <VideoCarousel />
         </div>
 

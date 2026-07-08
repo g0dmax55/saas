@@ -20,7 +20,7 @@ export default function G2Badges() {
         />
 
         <p className="relative text-center font-medium text-sm text-white leading-none tracking-[-0.08px] md:text-base">
-          G2 Best AI software company 2026
+          G2 Best Software Company 2026
         </p>
 
         <div className="relative flex items-center gap-[15px] md:gap-6">
@@ -35,7 +35,7 @@ export default function G2Badges() {
           />
           <Image
             src="https://cdn-site-assets.veed.io/g2_badge_ai_products_d9fbda876b/g2_badge_ai_products_d9fbda876b.webp"
-            alt="G2 Best Software 2026 - Top 50 AI Products"
+            alt="G2 Best Software 2026 - Top 50 Products"
             width={181}
             height={209}
             className="h-auto w-[114px] md:w-auto"

@@ -25,8 +25,8 @@ const NAV_LINKS: NavItem[] = [
     children: [
       { label: "Video Editor", href: "#" },
       { label: "Screen Recorder", href: "#" },
-      { label: "AI Avatars", href: "#" },
-      { label: "AI Video Generator", href: "#" },
+      { label: "Avatars", href: "#" },
+      { label: "Video Generator", href: "#" },
     ],
   },
   {
@@ -39,12 +39,12 @@ const NAV_LINKS: NavItem[] = [
     ],
   },
   {
-    label: "AI",
+    label: "Tools",
     children: [
-      { label: "AI Avatars", href: "#" },
+      { label: "Avatars", href: "#" },
       { label: "Text to Video", href: "#" },
-      { label: "AI Voiceover", href: "#" },
-      { label: "AI Translate", href: "#" },
+      { label: "Voiceover", href: "#" },
+      { label: "Translate", href: "#" },
     ],
   },
   {

@@ -1,5 +1,5 @@
 const TOOLS_DESKTOP = [
-  "AI Subtitle Generator",
+  "Subtitle Generator",
   "Auto Captions",
   "Animated Subtitles",
   "Word-by-Word Highlight",
@@ -32,7 +32,7 @@ const TOOLS_DESKTOP = [
 ];
 
 const TOOLS_MOBILE = [
-  "AI Subtitle Generator",
+  "Subtitle Generator",
   "Auto Captions",
   "Animated Subtitles",
   "Word-by-Word Highlight",

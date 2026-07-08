@@ -2,7 +2,7 @@
 export default function HeroSection() {
   return (
     <section id="hero-section" className="relative">
-      <div className="mx-auto max-w-[1920px] px-4 pt-24 pb-4 md:px-6 md:pb-0 lg:pt-28 xl:max-w-[1408px] xl:px-4 min-[1440px]:px-0">
+      <div className="mx-auto max-w-[1920px] px-4 pt-24 pb-14 md:px-6 md:pb-24 lg:pt-28 xl:max-w-[1408px] xl:px-4 min-[1440px]:px-0">
         <div className="mx-auto flex flex-col items-center">
           <div className="flex w-full flex-col items-center">
             <div className="flex flex-row items-center justify-center gap-2.5 text-sm text-black/50">
@@ -24,12 +24,50 @@ export default function HeroSection() {
               <span>5 star reviews</span>
             </div>
             <h1 className="mt-3 w-full max-w-[20rem] text-pretty text-center font-medium text-[#121212] text-[40px] leading-[88%] tracking-[-2px] md:max-w-none md:text-[44px] md:tracking-[-1.76px]">
-              AI-Powered Subtitles, made for social
+              Instant Subtitles, made for social
             </h1>
             <p className="mt-6 text-pretty text-center font-normal text-[#79716B] text-[16px] leading-none tracking-[-0.08px]">
               Upload. Detect. Transcribe. Burn. Professional subtitles worth
               posting, in minutes.
             </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3.5 sm:flex-row">
+              <button className="flex h-[46px] cursor-pointer items-center justify-center gap-2.5 rounded-full bg-[#96FF1A] px-6 font-sans text-[14px] font-medium text-[#121212] transition-all duration-200 hover:brightness-95 hover:scale-[1.01] active:scale-[0.99]">
+                <svg
+                  className="h-5 w-5 text-[#121212]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="5" />
+                  <polygon points="10 8 16 12 10 16" />
+                </svg>
+                <span>Create AI video</span>
+              </button>
+              <button className="flex h-[46px] cursor-pointer items-center justify-center gap-2.5 rounded-full bg-[#E6FFC8] px-6 font-sans text-[14px] font-medium text-[#121212] transition-all duration-200 hover:brightness-95 hover:scale-[1.01] active:scale-[0.99]">
+                <svg
+                  className="h-5 w-5 text-[#121212]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle cx="6" cy="17" r="2.5" />
+                  <circle cx="10" cy="18" r="2.5" />
+                  <path d="M8 15L17 6M12 16L18 10" />
+                  <circle cx="11.5" cy="11.5" r="0.75" fill="currentColor" />
+                  <path d="M18 5.5h3.5M19.75 3.75v3.5" strokeWidth="1.2" />
+                  <path d="M21 9h2M22 8v2" strokeWidth="1" />
+                </svg>
+                <span>AI Edit</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
