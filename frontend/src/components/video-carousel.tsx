@@ -111,7 +111,7 @@ export default function VideoCarousel() {
   };
 
   return (
-    <section className="relative w-full">
+    <section id="styles" className="relative w-full">
       <div
         className="flex justify-center overflow-hidden"
       >
