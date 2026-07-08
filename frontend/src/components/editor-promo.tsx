@@ -39,6 +39,7 @@ export default function EditorPromo() {
             loop
             muted
             playsInline
+            aria-label="Editor demonstration video"
             className="h-auto w-full rounded-xl shadow-md md:rounded-2xl"
             style={{
               backgroundImage:

@@ -1,4 +1,3 @@
-"use client";
 
 export default function HeroSection() {
   return (
@@ -12,6 +11,7 @@ export default function HeroSection() {
                 fill="currentColor"
                 strokeWidth="0"
                 role="img"
+                aria-label="G2 Rating"
                 viewBox="0 0 24 24"
                 className="h-4"
                 height="1em"

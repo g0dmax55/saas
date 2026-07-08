@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const PRESETS = [
   { label: "Clean", prompt: "Clean minimal subtitles for professional videos..." },
@@ -14,6 +14,18 @@ export default function PromptInput() {
   const [showPresets, setShowPresets] = useState(false);
   const [activeTab, setActiveTab] = useState<"create" | "edit">("create");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const presetRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showPresets) return;
+    const handleMouseDown = (e: MouseEvent) => {
+      if (presetRef.current && !presetRef.current.contains(e.target as Node)) {
+        setShowPresets(false);
+      }
+    };
+    document.addEventListener("mousedown", handleMouseDown);
+    return () => document.removeEventListener("mousedown", handleMouseDown);
+  }, [showPresets]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,13 +113,18 @@ export default function PromptInput() {
                     ? "Paste a video link or upload a short video..."
                     : "Choose a subtitle style and customize..."
                 }
+                aria-label={
+                  activeTab === "create"
+                    ? "Paste a video link or upload a short video..."
+                    : "Choose a subtitle style and customize..."
+                }
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 rows={2}
               />
               <div className="flex flex-row items-center justify-between px-3 pt-1.5 pb-3 text-[14px] leading-[140%] text-gray-800">
                 <div className="flex flex-row gap-2">
-                  <div className="relative">
+                  <div className="relative" ref={presetRef}>
                     <button
                       type="button"
                       className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-gray-100 bg-white transition hover:bg-gray-50"
@@ -191,6 +208,7 @@ export default function PromptInput() {
                 <div className="flex flex-row gap-2">
                   <button
                     type="submit"
+                    aria-label="Submit"
                     className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#96FF1A] bg-[#96FF1A] text-[#262525] transition hover:bg-[#96FF1A]/75"
                   >
                     <svg

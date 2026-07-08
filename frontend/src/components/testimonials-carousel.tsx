@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 
 const TESTIMONIALS = [
   {
@@ -11,14 +12,14 @@ const TESTIMONIALS = [
     image: "https://cdn-site-assets.veed.io/gwenne_ad07f1d917/gwenne_ad07f1d917.webp",
   },
   {
-    quote: "You can go beyond choppping things. VEED actually makes my videos look great.",
+    quote: "You can go beyond chopping things. VEED actually makes my videos look great.",
     name: "Michael Glover",
     role: "Demand Gen Manager",
     company: "ConvertFlow",
     image: "https://cdn-site-assets.veed.io/michael_1c6818c062/michael_1c6818c062.webp",
   },
   {
-    quote: "The first four videos i created with VEED got over 40,000 impressions on LinkedIn.",
+    quote: "The first four videos I created with VEED got over 40,000 impressions on LinkedIn.",
     name: "Travis Tyler",
     role: "Senior Content Producer",
     company: "PandaDoc",
@@ -76,7 +77,7 @@ export default function TestimonialsCarousel() {
                 <p className="mt-1 font-medium text-[#0c0a09] text-base leading-[1.36] tracking-[-0.08px]">{t.quote}</p>
               </div>
               <div className="relative h-[236px] w-full overflow-hidden rounded-[10px]">
-                <img src={t.image} alt={t.name} className="h-full w-full object-cover object-top" />
+                <Image src={t.image} alt={t.name} fill className="object-cover object-top" unoptimized />
                 <div className="absolute bottom-0 left-0 flex flex-col gap-2 rounded-[10px] bg-white p-4">
                   <p className="font-medium text-[#121212] text-[13px] leading-[1.36]">{t.name}</p>
                   <p className="text-[#797676] text-[13px] leading-[1.36] tracking-[0.13px]">

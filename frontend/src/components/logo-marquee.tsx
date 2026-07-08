@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 const LOGOS = [
   {
     src: "https://cdn-site-assets.veed.io/cdn-cgi/image/width=256,quality=100,format=auto/Amazon_c72e6b68ae/Amazon_c72e6b68ae.png",
@@ -87,11 +89,11 @@ export default function LogoMarquee() {
       id="logos-section"
       className="relative mx-auto w-full max-w-7xl py-10 md:py-[100px]"
     >
-      <p className="mx-auto mb-6 max-w-[302px] text-center font-serif italic font-normal text-[#262525] text-[32px] leading-none tracking-[-0.96px] md:mb-8 md:max-w-none md:text-[40px] md:tracking-[-1.2px]">
-        <span className="font-medium not-italic font-sans tracking-[-0.64px] md:tracking-[-0.64px]">
+      <p className="mx-auto mb-6 max-w-[302px] text-center font-serif italic font-normal text-[#79716B] text-[36px] leading-none tracking-[-1.08px] md:mb-8 md:max-w-none md:text-[44px] md:tracking-[-1.32px]">
+        <span className="font-bold not-italic font-sans text-[#121212] tracking-[-0.72px] md:tracking-[-0.88px]">
           Powering millions of
         </span>{" "}
-        <span className="tracking-[-0.32px] md:tracking-[-1.2px]">
+        <span className="tracking-[-0.36px] md:tracking-[-1.32px]">
           teams globally
         </span>
       </p>
@@ -105,21 +107,14 @@ export default function LogoMarquee() {
             <div
               key={`logo-${i}`}
               className="shrink-0"
-              style={
-                {
-                  "--logo-width": `${logo.w}px`,
-                  "--logo-height": `${logo.h}px`,
-                } as React.CSSProperties
-              }
             >
-              <img
+              <Image
                 alt={logo.alt}
-                loading="lazy"
-                width={logo.w}
-                height={logo.h}
-                decoding="async"
+                width={Math.round(logo.w)}
+                height={Math.round(logo.h)}
                 className="brightness-0"
                 src={logo.src}
+                unoptimized
               />
             </div>
           ))}

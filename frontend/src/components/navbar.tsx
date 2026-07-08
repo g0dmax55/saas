@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type DropdownItem = {
@@ -103,6 +103,19 @@ export default function Navbar() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const closeAll = useCallback(() => {
+    setOpenMenu(null);
+    setMobileOpen(false);
+  }, []);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") closeAll();
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [closeAll]);
+
   return (
     <header
       data-testid="v3-lite-header"
@@ -135,6 +148,8 @@ export default function Navbar() {
                   <button
                     type="button"
                     className="flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-base text-gray-700 no-underline transition-colors duration-150 hover:text-gray-900"
+                    aria-expanded={openMenu === item.label}
+                    aria-haspopup="true"
                     onClick={() =>
                       setOpenMenu(openMenu === item.label ? null : item.label)
                     }
@@ -159,12 +174,14 @@ export default function Navbar() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
                         transition={{ duration: 0.15 }}
+                        role="menu"
                         className="absolute top-full left-0 mt-1 min-w-[200px] rounded-xl border border-gray-100 bg-white p-1.5 shadow-lg"
                       >
                         {item.children.map((child) => (
                           <a
                             key={child.label}
                             href={child.href}
+                            role="menuitem"
                             className="block rounded-lg px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900"
                           >
                             {child.label}
@@ -195,6 +212,7 @@ export default function Navbar() {
               type="button"
               className="flex size-10 cursor-pointer items-center justify-center lg:hidden"
               aria-label="Menu"
+              aria-expanded={mobileOpen}
               onClick={() => setMobileOpen(!mobileOpen)}
             >
               <div className="flex flex-col items-center justify-center gap-[5px]">
@@ -206,6 +224,93 @@ export default function Navbar() {
           </div>
         </nav>
       </div>
+
+      {/* ── Mobile menu panel ── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="overflow-hidden border-b border-gray-100 bg-white lg:hidden"
+          >
+            <nav className="mx-auto flex max-w-[1200px] flex-col gap-1 px-4 py-4">
+              {NAV_LINKS.map((item) =>
+                hasChildren(item) ? (
+                  <div key={item.label}>
+                    <button
+                      type="button"
+                      aria-expanded={openMenu === item.label}
+                      aria-haspopup="true"
+                      className="flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-base font-medium text-gray-800 transition-colors hover:bg-gray-50"
+                      onClick={() =>
+                        setOpenMenu(
+                          openMenu === item.label ? null : item.label,
+                        )
+                      }
+                    >
+                      {item.label}
+                      <ChevronDown
+                        className={`size-2.5 text-gray-400 transition-transform duration-200 ${
+                          openMenu === item.label ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+
+                    <AnimatePresence>
+                      {openMenu === item.label && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.15, ease: "easeInOut" }}
+                          role="menu"
+                          className="overflow-hidden pl-3"
+                        >
+                          {item.children.map((child) => (
+                            <a
+                              key={child.label}
+                              href={child.href}
+                              role="menuitem"
+                              className="block rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                            >
+                              {child.label}
+                            </a>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    className="block rounded-lg px-3 py-2.5 text-base font-medium text-gray-800 transition-colors hover:bg-gray-50"
+                  >
+                    {item.label}
+                  </a>
+                ),
+              )}
+
+              {/* Mobile Login & Sign Up */}
+              <hr className="my-2 border-gray-100" />
+              <a
+                href="/login"
+                className="block rounded-lg px-3 py-2.5 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50"
+              >
+                Login
+              </a>
+              <a
+                href="/signup"
+                className="mt-1 block rounded-full bg-[#323232] px-4 py-3 text-center text-base font-medium text-white no-underline transition-colors hover:bg-[#1a1a1a]"
+              >
+                Sign Up
+              </a>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
