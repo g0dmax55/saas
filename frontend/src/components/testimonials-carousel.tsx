@@ -5,28 +5,28 @@ import Image from "next/image";
 
 const TESTIMONIALS = [
   {
-    quote: "With VEED I didn't need 15 tutorials - I jumped straight in and started editing.",
+    quote: "With SubCaps I didn't need 15 tutorials - I jumped straight in and started adding subtitles.",
     name: "Gwenne Wilcox",
     role: "Founder",
     company: "Brand Brainery",
     image: "https://cdn-site-assets.veed.io/gwenne_ad07f1d917/gwenne_ad07f1d917.webp",
   },
   {
-    quote: "You can go beyond chopping things. VEED actually makes my videos look great.",
+    quote: "You can go beyond basic editing. SubCaps actually makes my videos stand out.",
     name: "Michael Glover",
     role: "Demand Gen Manager",
     company: "ConvertFlow",
     image: "https://cdn-site-assets.veed.io/michael_1c6818c062/michael_1c6818c062.webp",
   },
   {
-    quote: "The first four videos I created with VEED got over 40,000 impressions on LinkedIn.",
+    quote: "The first four videos I captioned with SubCaps got over 40,000 impressions on LinkedIn.",
     name: "Travis Tyler",
     role: "Senior Content Producer",
     company: "PandaDoc",
     image: "https://cdn-site-assets.veed.io/travis_fbfd5a61b7/travis_fbfd5a61b7.webp",
   },
   {
-    quote: "I found VEED at the right time: if you're making UGC ads and not using Eye Contact Correction and Noise Reduction on VEED you're missing out on ROI.",
+    quote: "I found SubCaps at the right time: if you're making short-form content and not using auto-generated subtitles you're missing out on views.",
     name: "Sebastian Schurgers",
     role: "Head of Growth Marketing",
     company: "Gronda",

@@ -30,10 +30,10 @@ export default function HeroSection() {
               Upload. Detect. Transcribe. Burn. Professional subtitles worth
               posting, in minutes.
             </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-3.5 sm:flex-row">
-              <button className="flex h-[46px] cursor-pointer items-center justify-center gap-2.5 rounded-full bg-[#96FF1A] px-6 font-sans text-[14px] font-medium text-[#121212] transition-all duration-200 hover:brightness-95 hover:scale-[1.01] active:scale-[0.99]">
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <button className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#96FF1A] px-5 font-sans text-[15px] font-medium text-[#121212] tracking-tight transition-all duration-200 hover:brightness-95 hover:scale-[1.01] active:scale-[0.99]">
                 <svg
-                  className="h-5 w-5 text-[#121212]"
+                  className="h-[18px] w-[18px] text-[#121212]"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -47,9 +47,9 @@ export default function HeroSection() {
                 </svg>
                 <span>Create AI video</span>
               </button>
-              <button className="flex h-[46px] cursor-pointer items-center justify-center gap-2.5 rounded-full bg-[#E6FFC8] px-6 font-sans text-[14px] font-medium text-[#121212] transition-all duration-200 hover:brightness-95 hover:scale-[1.01] active:scale-[0.99]">
+              <button className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#E6FFC8] px-5 font-sans text-[15px] font-medium text-[#121212] tracking-tight transition-all duration-200 hover:brightness-95 hover:scale-[1.01] active:scale-[0.99]">
                 <svg
-                  className="h-5 w-5 text-[#121212]"
+                  className="h-[18px] w-[18px] text-[#121212]"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
