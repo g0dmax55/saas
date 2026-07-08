@@ -43,7 +43,9 @@ const VIDEOS = [
 export default function VideoCarousel() {
   const [activeIndex, setActiveIndex] = useState(2);
   const [animKey, setAnimKey] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const videosRef = useRef<(HTMLVideoElement | null)[]>([]);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const goTo = useCallback((index: number) => {
     setActiveIndex(index);
@@ -63,11 +65,30 @@ export default function VideoCarousel() {
     }
   }, [activeIndex]);
 
+  // Fallback auto-advance in case CSS animationend is unreliable
+  useEffect(() => {
+    if (isPaused) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      return;
+    }
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      goNext();
+    }, 8000);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [activeIndex, animKey, isPaused, goNext]);
+
   const getPosition = (i: number) => (i - activeIndex) * 290;
 
   return (
     <section className="relative w-full">
-      <div className="flex touch-pan-y justify-center overflow-hidden">
+      <div
+        className="flex touch-pan-y justify-center overflow-hidden"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
         <div className="relative flex items-center justify-center h-[420px] md:h-[540px]">
           {VIDEOS.map((video, i) => {
             const pos = getPosition(i);
@@ -87,9 +108,7 @@ export default function VideoCarousel() {
                   role="button"
                   tabIndex={0}
                   aria-label={`Select ${video.label} example`}
-                  className={`group relative flex-none cursor-pointer h-[380px] w-[242px] overflow-hidden rounded-2xl bg-neutral-900 md:h-[503px] md:w-[282px] ${
-                    isActive ? "shadow-2xl shadow-black/25" : ""
-                  }`}
+                  className="group relative flex-none cursor-pointer h-[380px] w-[242px] overflow-hidden rounded-2xl bg-neutral-900 md:h-[503px] md:w-[282px]"
                   onClick={() => goTo(i)}
                 >
                   <video
@@ -146,7 +165,10 @@ export default function VideoCarousel() {
                   <div className="h-1 w-10 overflow-hidden rounded-sm bg-[rgba(18,18,18,0.12)]">
                     <div
                       className="h-1 rounded-sm bg-[#121212]"
-                      style={{ animation: `carousel-progress 8000ms linear forwards` }}
+                      style={{
+                        animation: `carousel-progress 8000ms linear forwards`,
+                        animationPlayState: isPaused ? "paused" : "running",
+                      }}
                       onAnimationEnd={goNext}
                     />
                   </div>
