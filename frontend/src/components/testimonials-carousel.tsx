@@ -9,28 +9,28 @@ const TESTIMONIALS = [
     name: "Gwenne Wilcox",
     role: "Founder",
     company: "Brand Brainery",
-    image: "https://cdn-site-assets.veed.io/gwenne_ad07f1d917/gwenne_ad07f1d917.webp",
+    image: "/assets/images/gwenne.webp",
   },
   {
     quote: "You can go beyond basic editing. SubCaps actually makes my videos stand out.",
     name: "Michael Glover",
     role: "Demand Gen Manager",
     company: "ConvertFlow",
-    image: "https://cdn-site-assets.veed.io/michael_1c6818c062/michael_1c6818c062.webp",
+    image: "/assets/images/michael.webp",
   },
   {
     quote: "The first four videos I captioned with SubCaps got over 40,000 impressions on LinkedIn.",
     name: "Travis Tyler",
     role: "Senior Content Producer",
     company: "PandaDoc",
-    image: "https://cdn-site-assets.veed.io/travis_fbfd5a61b7/travis_fbfd5a61b7.webp",
+    image: "/assets/images/travis.webp",
   },
   {
     quote: "I found SubCaps at the right time: if you're making short-form content and not using auto-generated subtitles you're missing out on views.",
     name: "Sebastian Schurgers",
     role: "Head of Growth Marketing",
     company: "Gronda",
-    image: "https://cdn-site-assets.veed.io/sebastian_b4732a00ff/sebastian_b4732a00ff.webp",
+    image: "/assets/images/sebastian.webp",
   },
 ];
 

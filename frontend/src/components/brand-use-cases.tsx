@@ -3,22 +3,22 @@
 import { useState } from "react";
 
 const GENERATE_POSTER =
-  "https://cdn-site-assets.veed.io/cdn-cgi/image/width=932,quality=75,format=auto/generate_poster_b6144e5421/generate_poster_b6144e5421.webp";
+  "/assets/images/generate_poster.webp";
 
 const GENERATE_VIDEO =
-  "https://storage.googleapis.com/veed-prod-strapi-bucket/bento_video_1_5fe74da376/bento_video_1_5fe74da376.mp4";
+  "/assets/videos/subtitles_bento.mp4";
 
 const GENERATE_VIDEO_MOBILE =
-  "https://storage.googleapis.com/veed-prod-strapi-bucket/Bento_video_1_9x16_aeb7e35726/Bento_video_1_9x16_aeb7e35726.mp4";
+  "/assets/videos/brand_bento.mp4";
 
 const SUBTITLES_IMAGE =
-  "https://cdn-site-assets.veed.io/cdn-cgi/image/width=1536,quality=75,format=auto/bento_subtitles_a74f84eb52/bento_subtitles_a74f84eb52.webp";
+  "/assets/images/bento_subtitles.webp";
 
 const BRAND_IMAGE =
-  "https://cdn-site-assets.veed.io/cdn-cgi/image/width=1536,quality=75,format=auto/bento_brand_b3149f7ac1/bento_brand_b3149f7ac1.webp";
+  "/assets/images/bento_brand.webp";
 
 const MOBILE_POSTER =
-  "https://cdn-site-assets.veed.io/cdn-cgi/image/width=932,quality=75,format=auto/generate_poster_mobile_5923d7f6ff/generate_poster_mobile_5923d7f6ff.webp";
+  "/assets/images/generate_poster_mobile.webp";
 
 function ArrowIcon() {
   return (

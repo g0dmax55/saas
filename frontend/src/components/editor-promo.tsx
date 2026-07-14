@@ -33,8 +33,8 @@ export default function EditorPromo() {
 
         <div className="relative mt-8 w-full max-w-[845px]">
           <video
-            src="https://cdn-site-assets.veed.io/editor_promo_video_6febbb1dd3/editor_promo_video_6febbb1dd3.mp4"
-            poster="https://cdn-site-assets.veed.io/editor_promo_thumbnail_c0acc9c852/editor_promo_thumbnail_c0acc9c852.webp"
+            src="/assets/videos/editor_promo.mp4"
+            poster="/assets/images/editor_promo_thumbnail.webp"
             autoPlay
             loop
             muted
@@ -43,7 +43,7 @@ export default function EditorPromo() {
             className="h-auto w-full rounded-xl shadow-md md:rounded-2xl"
             style={{
               backgroundImage:
-                "url(https://cdn-site-assets.veed.io/editor_promo_thumbnail_c0acc9c852/editor_promo_thumbnail_c0acc9c852.webp)",
+                "url(/assets/images/editor_promo_thumbnail.webp)",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}

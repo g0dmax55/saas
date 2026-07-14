@@ -3,13 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 const PREVIEW_VIDEOS = [
   {
     id: "left",
-    poster: "https://cdn-site-assets.veed.io/ad_thumbnail_e2d966af2f/ad_thumbnail_e2d966af2f.webp",
-    src: "https://cdn-site-assets.veed.io/ad_19a9e711bc_543babf5be.webm",
+    poster: "/assets/images/dynamic_thumbnail.webp",
+    src: "/assets/videos/ad.webm",
     rotation: -8,
     xOffset: -120,
     zIndex: 10,
@@ -17,8 +18,8 @@ const PREVIEW_VIDEOS = [
   },
   {
     id: "center",
-    poster: "https://cdn-site-assets.veed.io/explainer_thumbnail_3768659367/explainer_thumbnail_3768659367.webp",
-    src: "https://cdn-site-assets.veed.io/explainer_f6002e993a_93dbb828aa/explainer_f6002e993a_93dbb828aa.webm",
+    poster: "/assets/images/clean_thumbnail.webp",
+    src: "/assets/videos/explainer.webm",
     rotation: 0,
     xOffset: 0,
     zIndex: 20,
@@ -26,8 +27,8 @@ const PREVIEW_VIDEOS = [
   },
   {
     id: "right",
-    poster: "https://cdn-site-assets.veed.io/testimonial_thumbnail_19133c385f/testimonial_thumbnail_19133c385f.webp",
-    src: "https://cdn-site-assets.veed.io/testimonial_0c0ce3bb84_3b7b09718d/testimonial_0c0ce3bb84_3b7b09718d.webm",
+    poster: "/assets/images/minimal_thumbnail.webp",
+    src: "/assets/videos/minimal.webm",
     rotation: 8,
     xOffset: 120,
     zIndex: 10,
@@ -36,12 +37,13 @@ const PREVIEW_VIDEOS = [
 ];
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Authentication logic would go here
+    router.push("/dashboard");
   };
 
   return (

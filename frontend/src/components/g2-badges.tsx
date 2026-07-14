@@ -5,14 +5,14 @@ export default function G2Badges() {
     <section className="mx-auto mt-24 w-full max-w-[1200px] px-2 pb-16 md:px-6 lg:max-w-[845px] lg:px-0 xl:max-w-[1200px]">
       <div className="relative flex flex-col items-center gap-[31px] overflow-hidden rounded-2xl bg-[#121212] py-10">
         <Image
-          src="https://cdn-site-assets.veed.io/g2_section_bg_mobile_321fc34e2d/g2_section_bg_mobile_321fc34e2d.webp"
+          src="/assets/images/g2_section_bg_mobile.webp"
           alt=""
           fill
           className="pointer-events-none absolute bottom-0 left-0 w-full select-none object-cover md:hidden"
           unoptimized
         />
         <Image
-          src="https://cdn-site-assets.veed.io/g2_section_bg_desktop_5646817f34/g2_section_bg_desktop_5646817f34.webp"
+          src="/assets/images/g2_section_bg_desktop.webp"
           alt=""
           fill
           className="pointer-events-none absolute bottom-0 left-0 hidden w-full select-none object-cover md:block"
@@ -25,7 +25,7 @@ export default function G2Badges() {
 
         <div className="relative flex items-center gap-[15px] md:gap-6">
           <Image
-            src="https://cdn-site-assets.veed.io/g2_badge_uk_bc1cf97bb7/g2_badge_uk_bc1cf97bb7.webp"
+            src="/assets/images/g2_badge_uk.webp"
             alt="G2 Best Software 2026 - Top 50 UK"
             width={156}
             height={180}
@@ -34,7 +34,7 @@ export default function G2Badges() {
             unoptimized
           />
           <Image
-            src="https://cdn-site-assets.veed.io/g2_badge_ai_products_d9fbda876b/g2_badge_ai_products_d9fbda876b.webp"
+            src="/assets/images/g2_badge_ai_products.webp"
             alt="G2 Best Software 2026 - Top 50 Products"
             width={181}
             height={209}
@@ -43,7 +43,7 @@ export default function G2Badges() {
             unoptimized
           />
           <Image
-            src="https://cdn-site-assets.veed.io/g2_badge_design_products_1b87aa120a/g2_badge_design_products_1b87aa120a.webp"
+            src="/assets/images/g2_badge_design_products.webp"
             alt="G2 Best Software 2026 - Top 50 Design Products"
             width={156}
             height={180}

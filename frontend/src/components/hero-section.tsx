@@ -1,3 +1,4 @@
+import Link from "next/link";
 
 export default function HeroSection() {
   return (
@@ -31,7 +32,10 @@ export default function HeroSection() {
               posting, in minutes.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <button className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#96FF1A] px-5 font-sans text-[15px] font-medium text-[#121212] tracking-tight transition-all duration-200 hover:brightness-95 hover:scale-[1.01] active:scale-[0.99]">
+              <Link
+                href="/signup"
+                className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#96FF1A] px-5 font-sans text-[15px] font-medium text-[#121212] tracking-tight transition-all duration-200 hover:brightness-95 hover:scale-[1.01] active:scale-[0.99]"
+              >
                 <svg
                   className="h-[18px] w-[18px] text-[#121212]"
                   viewBox="0 0 24 24"
@@ -45,9 +49,12 @@ export default function HeroSection() {
                   <rect x="3" y="3" width="18" height="18" rx="5" />
                   <polygon points="10 8 16 12 10 16" />
                 </svg>
-                <span>Create AI video</span>
-              </button>
-              <button className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#E6FFC8] px-5 font-sans text-[15px] font-medium text-[#121212] tracking-tight transition-all duration-200 hover:brightness-95 hover:scale-[1.01] active:scale-[0.99]">
+                <span>Subtitle video</span>
+              </Link>
+              <a
+                href="#templates"
+                className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#E6FFC8] px-5 font-sans text-[15px] font-medium text-[#121212] tracking-tight transition-all duration-200 hover:brightness-95 hover:scale-[1.01] active:scale-[0.99]"
+              >
                 <svg
                   className="h-[18px] w-[18px] text-[#121212]"
                   viewBox="0 0 24 24"
@@ -58,15 +65,11 @@ export default function HeroSection() {
                   strokeLinejoin="round"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <circle cx="6" cy="17" r="2.5" />
-                  <circle cx="10" cy="18" r="2.5" />
-                  <path d="M8 15L17 6M12 16L18 10" />
-                  <circle cx="11.5" cy="11.5" r="0.75" fill="currentColor" />
-                  <path d="M18 5.5h3.5M19.75 3.75v3.5" strokeWidth="1.2" />
-                  <path d="M21 9h2M22 8v2" strokeWidth="1" />
+                  <circle cx="12" cy="12" r="10" />
+                  <polygon points="10 8 16 12 10 16" fill="currentColor" />
                 </svg>
-                <span>AI Edit</span>
-              </button>
+                <span>Watch demo</span>
+              </a>
             </div>
           </div>
         </div>
