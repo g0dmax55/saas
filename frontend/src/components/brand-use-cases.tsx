@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 const GENERATE_POSTER =
   "/assets/images/generate_poster.webp";
@@ -76,13 +77,13 @@ export default function BrandUseCases() {
           </a>
 
           <a href="#" className="group relative flex min-h-[380px] cursor-pointer flex-col items-start justify-end overflow-hidden rounded-2xl bg-[#1a1a1a] transition-transform hover:scale-[1.01]">
-            <img src={SUBTITLES_IMAGE} alt="Auto-detected language transcription with word-level precision" className="absolute inset-0 h-full w-full object-cover object-top" />
+            <Image src={SUBTITLES_IMAGE} alt="Auto-detected language transcription with word-level precision" fill className="object-cover object-top" unoptimized />
             <div className="absolute top-4 left-4 z-10 rounded-[4px] bg-black/40 px-2 py-2 font-medium text-[12px] text-white leading-none backdrop-blur-[12px]">Detect &amp; Transcribe</div>
             <CardContent title="Auto-detect language, generate accurate transcript." subtitle="40+ languages supported. Word-level precision with 99% accuracy." />
           </a>
 
           <a href="#" className="group relative flex min-h-[380px] cursor-pointer flex-col items-start justify-end overflow-hidden rounded-2xl bg-[#1a1a1a] transition-transform hover:scale-[1.01]">
-            <img src={BRAND_IMAGE} alt="Subtitle style preview with dynamic and gradient designs" className="absolute inset-0 h-full w-full object-cover object-top" />
+            <Image src={BRAND_IMAGE} alt="Subtitle style preview with dynamic and gradient designs" fill className="object-cover object-top" unoptimized />
             <div className="absolute top-4 left-4 z-10 rounded-[4px] bg-black/40 px-2 py-2 font-medium text-[12px] text-white leading-none backdrop-blur-[12px]">Style &amp; Burn</div>
             <CardContent title="Choose from dozens of designs, burn into video." subtitle="Dynamic, animated, gradient, and custom styles. Export in one click." />
           </a>
@@ -98,7 +99,7 @@ export default function BrandUseCases() {
               {card.isVideo ? (
                 <video src={GENERATE_VIDEO_MOBILE} poster={card.image} autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover object-top" />
               ) : (
-                <img src={card.image} alt={card.id === "detect" ? "Auto-detected language transcription with word-level precision" : "Subtitle style preview with dynamic and gradient designs"} className="absolute inset-0 h-full w-full object-cover object-top" />
+                <Image src={card.image} alt={card.id === "detect" ? "Auto-detected language transcription with word-level precision" : "Subtitle style preview with dynamic and gradient designs"} fill className="object-cover object-top" unoptimized />
               )}
               <div className="absolute top-4 left-4 z-10 rounded-[4px] bg-black/40 px-2 py-2 font-medium text-[12px] text-white leading-none backdrop-blur-[12px]">{card.label}</div>
               <CardContent title={card.title} subtitle={card.subtitle} />

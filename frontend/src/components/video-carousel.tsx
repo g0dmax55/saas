@@ -64,8 +64,11 @@ export default function VideoCarousel() {
   const [muted, setMuted] = useState(true);
   const videosRef = useRef<(HTMLVideoElement | null)[]>([]);
   const activeRef = useRef(activeIndex);
-  activeRef.current = activeIndex;
   const lastAdvanceRef = useRef(0);
+
+  useEffect(() => {
+    activeRef.current = activeIndex;
+  }, [activeIndex]);
 
   const goNext = useCallback(() => {
     const now = Date.now();
@@ -86,7 +89,10 @@ export default function VideoCarousel() {
   }, [wrapIndex]);
 
   const goNextRef = useRef(goNext);
-  goNextRef.current = goNext;
+
+  useEffect(() => {
+    goNextRef.current = goNext;
+  }, [goNext]);
 
   useEffect(() => {
     const video = videosRef.current[activeIndex];

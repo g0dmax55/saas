@@ -104,7 +104,7 @@ export default function TermsPage() {
             </h2>
             <p className="text-sm">
               If you have any questions about these Terms, please contact us at{" "}
-              <a href="mailto:support@subcaps.com" className="font-semibold text-[#121212] underline hover:text-[#79716B]">
+              <a href="mailto:legal@subcaps.com" className="font-semibold text-[#121212] underline hover:text-[#79716B]">
                 legal@subcaps.com
               </a>.
             </p>

@@ -73,13 +73,16 @@ export default function ExportPage() {
 
       <div className="mt-8 space-y-6">
         {/* Video preview */}
-        <div className="flex h-48 items-center justify-center rounded-xl bg-[#121212]">
-          <div className="text-center">
-            <svg className="mx-auto h-10 w-10 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <polygon points="8 5 19 12 8 19" />
-            </svg>
-            <p className="mt-2 text-sm text-white/50">pasta_tutorial.mp4</p>
-            <p className="text-xs text-white/30">10 captions • 24.0s • English</p>
+        <div className="relative flex h-52 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2760%27 height=%2760%27 viewBox=%270 0 60 60%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cg fill=%27none%27 fill-rule=%27evenodd%27%3E%3Cg fill=%27%23ffffff%27 fill-opacity=%270.03%27%3E%3Cpath d=%27M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%27/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50" />
+          <div className="text-center relative z-10">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
+              <svg className="h-8 w-8 text-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <polygon points="8 5 19 12 8 19" fill="currentColor" fillOpacity="0.3" />
+              </svg>
+            </div>
+            <p className="mt-3 text-sm font-medium text-white/70">pasta_tutorial.mp4</p>
+            <p className="mt-0.5 text-xs text-white/40">10 captions · 24.0s · English</p>
           </div>
         </div>
 
@@ -153,9 +156,16 @@ export default function ExportPage() {
         <button
           onClick={handleExport}
           disabled={exporting}
-          className="w-full rounded-full bg-[#96FF1A] py-3 text-sm font-semibold text-[#121212] transition-all hover:brightness-95 disabled:opacity-60"
+          className="w-full rounded-full bg-[#96FF1A] py-3 text-sm font-semibold text-[#121212] transition-all hover:brightness-95 active:scale-[0.98] disabled:opacity-60"
         >
-          {exporting ? "Exporting..." : "Export Video"}
+          {exporting ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" strokeOpacity="0.2" /><path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" /></svg>
+              Exporting video...
+            </span>
+          ) : (
+            "Export Video"
+          )}
         </button>
         {exporting && (
           <div className="flex items-center justify-center gap-2 text-xs text-[#79716B]">
@@ -163,6 +173,28 @@ export default function ExportPage() {
             Processing your video...
           </div>
         )}
+
+        {/* Share */}
+        <div className="pt-2">
+          <p className="text-center text-xs font-medium text-[#79716B] mb-3">Share to</p>
+          <div className="flex items-center justify-center gap-3">
+            {[
+              { name: "Twitter", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> },
+              { name: "Facebook", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> },
+              { name: "Instagram", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="4" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg> },
+              { name: "Copy link", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> },
+            ].map((s) => (
+              <button
+                key={s.name}
+                type="button"
+                title={s.name}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-[#79716B] transition-all hover:border-[#96FF1A] hover:text-[#121212] hover:shadow-sm"
+              >
+                {s.icon}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

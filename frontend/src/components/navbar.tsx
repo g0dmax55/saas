@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 const NAV_LINKS = [
   { label: "Features", href: "/features" },
@@ -39,37 +40,37 @@ export default function Navbar() {
         }}
       >
         <nav className="mx-auto flex h-16 max-w-[1200px] items-center justify-between p-3">
-          <a className="group appearance-none -m-2 p-2" href="/">
+          <Link className="group appearance-none -m-2 p-2" href="/">
             <span className="sr-only">SubCaps</span>
             <Logo />
-          </a>
+          </Link>
 
           <ul className="hidden items-center gap-1 lg:flex">
             {NAV_LINKS.map((item) => (
               <li key={item.label}>
-                <a
+                <Link
                   href={item.href}
                   className="rounded-lg px-3 py-2 text-base text-gray-700 no-underline transition-colors duration-150 hover:text-gray-900"
                 >
                   {item.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
 
           <div className="flex items-center gap-5">
-            <a
+            <Link
               href="/login"
               className="hidden rounded-full px-3 py-2 text-base text-gray-700 no-underline hover:text-gray-500 lg:inline-block"
             >
               Login
-            </a>
-            <a
+            </Link>
+            <Link
               href="/signup"
               className="rounded-full bg-[#323232] px-4 pt-[10px] pb-3 text-sm font-medium tracking-tight text-white no-underline lg:px-3 lg:py-[10px] lg:text-base"
             >
               Sign Up
-            </a>
+            </Link>
             <button
               type="button"
               className="flex size-10 cursor-pointer items-center justify-center lg:hidden"
@@ -98,27 +99,27 @@ export default function Navbar() {
           >
             <nav className="mx-auto flex max-w-[1200px] flex-col gap-1 px-4 py-4">
               {NAV_LINKS.map((item) => (
-                <a
+                <Link
                   key={item.label}
                   href={item.href}
                   className="block rounded-lg px-3 py-2.5 text-base font-medium text-gray-800 transition-colors hover:bg-gray-50"
                 >
                   {item.label}
-                </a>
+                </Link>
               ))}
               <hr className="my-2 border-gray-100" />
-              <a
+              <Link
                 href="/login"
                 className="block rounded-lg px-3 py-2.5 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50"
               >
                 Login
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/signup"
                 className="mt-1 block rounded-full bg-[#323232] px-4 py-3 text-center text-base font-medium text-white no-underline transition-colors hover:bg-[#1a1a1a]"
               >
                 Sign Up
-              </a>
+              </Link>
             </nav>
           </motion.div>
         )}

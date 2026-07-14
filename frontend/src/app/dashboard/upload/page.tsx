@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 
 const AUTO_SUBS = [
   { text: "Welcome to my channel everyone" },
@@ -46,8 +47,16 @@ export default function UploadPage() {
         Upload a video — we&apos;ll auto-detect language, transcribe, and burn subtitles.
       </p>
 
+      <AnimatePresence mode="wait">
       {step === "upload" && (
-        <div className="mt-8 space-y-6">
+        <motion.div
+          key="upload"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2 }}
+          className="mt-8 space-y-6"
+        >
           <div
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
@@ -79,45 +88,105 @@ export default function UploadPage() {
             disabled={!file}
             className="w-full rounded-full bg-[#96FF1A] py-3 text-sm font-semibold text-[#121212] transition-all hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Process Video
+            {file ? `Process Video (${(file.size / (1024 * 1024)).toFixed(1)} MB)` : "Upload a video to continue"}
           </button>
-        </div>
+
+          {/* Supported formats */}
+          <div className="flex items-center justify-center gap-4 text-[10px] text-[#79716B]">
+            <span className="flex items-center gap-1">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="8 5 19 12 8 19" fill="currentColor" /></svg>
+              MP4
+            </span>
+            <span className="flex items-center gap-1">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="8 5 19 12 8 19" fill="currentColor" /></svg>
+              MOV
+            </span>
+            <span className="flex items-center gap-1">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="8 5 19 12 8 19" fill="currentColor" /></svg>
+              WebM
+            </span>
+            <span className="flex items-center gap-1">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="8 5 19 12 8 19" fill="currentColor" /></svg>
+              AVI
+            </span>
+          </div>
+        </motion.div>
       )}
 
       {step === "processing" && (
-        <div className="mt-16 flex flex-col items-center">
+        <motion.div
+          key="processing"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2 }}
+          className="mt-16 flex flex-col items-center"
+        >
           <div className="flex h-20 w-20 items-center justify-center">
-            <svg className="h-12 w-12 animate-spin text-[#96FF1A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" strokeOpacity="0.2" />
+            <svg className="h-14 w-14 animate-spin text-[#96FF1A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <circle cx="12" cy="12" r="10" strokeOpacity="0.15" />
               <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
             </svg>
           </div>
           <h2 className="mt-6 text-lg font-semibold text-[#121212]">Processing your video</h2>
-          <div className="mt-4 w-full max-w-xs space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[#79716B]">Detecting language</span>
-              <span className="text-[#96FF1A] font-medium">Done</span>
+          <p className="mt-1 text-sm text-[#79716B]">{file?.name}</p>
+          <div className="mt-6 w-full max-w-xs space-y-4">
+            {/* Step 1: Language Detection */}
+            <div className="flex items-center gap-3">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#E6FFC8]">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#121212" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-[#121212]">Detecting language</span>
+                  <span className="text-xs font-medium text-[#96FF1A]">Done</span>
+                </div>
+              </div>
             </div>
-            <div className="h-1 w-full rounded-full bg-gray-100"><div className="h-1 w-full rounded-full bg-[#96FF1A]" /></div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[#79716B]">Transcribing audio</span>
-              <span className="flex items-center gap-1 text-[#96FF1A] font-medium">
-                <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[#96FF1A]" />
-                Processing
-              </span>
+            {/* Step 2: Transcription */}
+            <div className="flex items-center gap-3">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#96FF1A] animate-pulse">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#121212" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-[#121212]">Transcribing audio</span>
+                  <span className="text-xs font-medium text-[#96FF1A]">Processing...</span>
+                </div>
+                <div className="mt-1 h-1 w-full rounded-full bg-gray-100 overflow-hidden">
+                  <div className="h-1 w-2/3 rounded-full bg-[#96FF1A] animate-pulse" />
+                </div>
+              </div>
             </div>
-            <div className="h-1 w-full rounded-full bg-gray-100 overflow-hidden"><div className="h-1 w-2/3 rounded-full bg-[#96FF1A] animate-pulse" /></div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[#79716B]">Burning subtitles</span>
-              <span className="text-gray-300">Waiting</span>
+            {/* Step 3: Burn subtitles */}
+            <div className="flex items-center gap-3 opacity-50">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-200">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#79716B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-[#79716B]">Burning subtitles</span>
+                  <span className="text-xs text-[#79716B]">Waiting</span>
+                </div>
+              </div>
             </div>
-            <div className="h-1 w-full rounded-full bg-gray-100" />
           </div>
-        </div>
+        </motion.div>
       )}
 
       {step === "done" && (
-        <div className="mt-8 space-y-6">
+        <motion.div
+          key="done"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2 }}
+          className="mt-8 space-y-6"
+        >
           {/* Result card */}
           <div className="rounded-2xl border border-gray-200 bg-white p-6">
             <div className="flex items-center gap-3">
@@ -169,8 +238,9 @@ export default function UploadPage() {
               Export Now
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }

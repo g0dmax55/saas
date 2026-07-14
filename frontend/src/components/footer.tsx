@@ -26,19 +26,26 @@ const FOOTER_COLS = [
   },
   {
     heading: "Product",
-    links: ["Pricing", "Enterprise"],
+    links: [
+      { label: "Features", href: "/features" },
+      { label: "Templates", href: "/templates" },
+      { label: "Use Cases", href: "/use-cases" },
+      { label: "Pricing", href: "/pricing" },
+    ],
     subheading: "Resources",
     sublinks: [
       "Blog", "Help Center", "API Docs",
-      "Video Guides", "Templates", "Changelog",
+      "Video Guides", "Changelog",
       "Community", "Affiliate Program",
     ],
   },
   {
     heading: "Company",
     links: [
-      "About", "Careers", "Privacy", "Terms", "Cookies",
-      "Contact", "Media Kit", "Status",
+      "About", "Careers",
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms", href: "/terms" },
+      "Cookies", "Contact", "Media Kit", "Status",
     ],
     subheading: "Connect",
     sublinks: ["X / Twitter", "YouTube", "Instagram", "TikTok", "Email"],
@@ -57,15 +64,19 @@ export default function Footer() {
                   {col.heading}
                 </p>
                 <div className="flex flex-col gap-4">
-                  {col.links.map((link) => (
-                    <a
-                      key={link}
-                      href="#"
-                      className="text-gray-400 text-sm no-underline transition-colors hover:text-gray-600"
-                    >
-                      {link}
-                    </a>
-                  ))}
+                  {col.links.map((link) => {
+                    const label = typeof link === "string" ? link : link.label;
+                    const href = typeof link === "string" ? "#" : link.href;
+                    return (
+                      <a
+                        key={label}
+                        href={href}
+                        className="text-gray-400 text-sm no-underline transition-colors hover:text-gray-600"
+                      >
+                        {label}
+                      </a>
+                    );
+                  })}
                 </div>
                 {col.subheading && (
                   <>
@@ -91,7 +102,7 @@ export default function Footer() {
         </nav>
 
         <p className="mt-8 text-gray-400 text-sm">
-          © Copyright 2026 Subtitle Studio
+          © Copyright 2026 SubCaps
         </p>
       </div>
     </footer>

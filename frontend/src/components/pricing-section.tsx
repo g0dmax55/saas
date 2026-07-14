@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import LogoMarquee from "./logo-marquee";
 
 const PLANS = [
@@ -149,12 +150,19 @@ export default function PricingSection() {
           </span>
         </div>
 
-        {/* Plan cards */}
-        <div className="mt-10 grid gap-6 md:mt-14 lg:grid-cols-3">
+         {/* Plan cards */}
+        <motion.div
+          className="mt-10 grid gap-6 md:mt-14 lg:grid-cols-3"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
+        >
           {PLANS.map((plan) => (
-            <div
+            <motion.div
               key={plan.name}
-              className={`relative flex flex-col rounded-2xl border p-6 md:p-8 ${
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4 } } }}
+              className={`relative flex flex-col rounded-2xl border p-6 md:p-8 transition-shadow hover:shadow-lg ${
                 plan.highlight
                   ? "border-[#96FF1A] shadow-lg shadow-[#96FF1A]/10"
                   : "border-gray-200"
@@ -228,9 +236,9 @@ export default function PricingSection() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
 

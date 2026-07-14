@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { Suspense } from "react";
+import { motion } from "framer-motion";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 
@@ -59,7 +63,7 @@ const FEATURES = [
   },
 ];
 
-export default function FeaturesPage() {
+function FeaturesContent() {
   return (
     <div className="relative">
       <Navbar />
@@ -73,17 +77,27 @@ export default function FeaturesPage() {
         </p>
       </div>
 
-      <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <motion.div
+        className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-50px" }}
+        variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
+      >
         {FEATURES.map((f) => (
-          <div key={f.title} className="rounded-2xl border border-gray-200 bg-white p-6 transition-shadow hover:shadow-md">
+          <motion.div
+            key={f.title}
+            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+            className="rounded-2xl border border-gray-200 bg-white p-6 transition-shadow hover:shadow-md"
+          >
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#E6FFC8] text-[#121212]">
               {f.icon}
             </div>
             <h3 className="mt-4 font-semibold text-[#121212]">{f.title}</h3>
             <p className="mt-2 text-sm leading-relaxed text-[#79716B]">{f.desc}</p>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       <div className="mt-16 text-center">
         <Link
@@ -93,6 +107,41 @@ export default function FeaturesPage() {
           Get started free
         </Link>
       </div>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+export default function FeaturesPage() {
+  return (
+    <Suspense fallback={<FeaturesSkeleton />}>
+      <FeaturesContent />
+    </Suspense>
+  );
+}
+
+function FeaturesSkeleton() {
+  return (
+    <div className="relative">
+      <Navbar />
+      <main className="mx-auto max-w-[1200px] px-4 pt-24 pb-20 md:px-6">
+        <div className="text-center animate-pulse">
+          <div className="mx-auto h-10 w-72 rounded-xl bg-gray-200" />
+          <div className="mx-auto mt-4 h-5 w-96 rounded-xl bg-gray-100" />
+        </div>
+        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-2xl border border-gray-200 bg-white p-6 animate-pulse">
+              <div className="h-10 w-10 rounded-xl bg-gray-200" />
+              <div className="mt-4 h-5 w-32 rounded bg-gray-200" />
+              <div className="mt-2 space-y-2">
+                <div className="h-3 w-full rounded bg-gray-100" />
+                <div className="h-3 w-3/4 rounded bg-gray-100" />
+              </div>
+            </div>
+          ))}
+        </div>
       </main>
       <Footer />
     </div>
