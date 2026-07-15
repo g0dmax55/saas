@@ -86,7 +86,7 @@ export const openaiTranscriber: Transcriber = {
     // Step 3: Transcribe
     const file = fs.createReadStream(audioFile);
     const transcript = await openai.audio.transcriptions.create({
-      model: "gpt-4o-transcribe",
+      model: "whisper-1",
       file,
       response_format: "verbose_json",
       timestamp_granularities: ["segment"],
@@ -110,7 +110,7 @@ export const openaiTranscriber: Transcriber = {
       for (let i = 1; i < chunks.length; i++) {
         const chunkFile = fs.createReadStream(chunks[i]);
         const chunkTranscript = await openai.audio.transcriptions.create({
-          model: "gpt-4o-transcribe",
+          model: "whisper-1",
           file: chunkFile,
           response_format: "verbose_json",
           timestamp_granularities: ["segment"],
