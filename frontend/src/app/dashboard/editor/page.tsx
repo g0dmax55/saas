@@ -73,6 +73,16 @@ function EditorContent() {
   // Load subtitles from API
   useEffect(() => {
     if (!projectId) return;
+
+    // Reset editor state immediately when switching to a different project
+    setSubs([]);
+    setActiveSub(null);
+    setCurrentTime(0);
+    setIsPlaying(false);
+    setProjectName("");
+    setVideoPath("");
+    setVideoError(false);
+
     let cancelled = false;
     async function load() {
       try {
