@@ -3,18 +3,18 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import path from "path";
 import os from "os";
-import Groq from "groq-sdk";
+import OpenAI from "openai";
 import type { Transcriber, TranscriptResult } from "./types";
 
 const execAsync = promisify(exec);
 
-let groqClient: Groq | null = null;
+let openaiClient: OpenAI | null = null;
 
-function getGroqClient(): Groq {
-  if (!groqClient) {
-    groqClient = new Groq({ apiKey: process.env.GROQ_API_KEY });
+function getOpenAIClient(): OpenAI {
+  if (!openaiClient) {
+    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }
-  return groqClient;
+  return openaiClient;
 }
 
 async function extractAudio(videoPath: string): Promise<string> {
@@ -66,11 +66,11 @@ async function splitAudio(audioPath: string): Promise<string[]> {
   return chunks;
 }
 
-export const groqTranscriber: Transcriber = {
+export const openaiTranscriber: Transcriber = {
   async transcribe(filePath: string): Promise<TranscriptResult> {
-    const groq = getGroqClient();
+    const openai = getOpenAIClient();
 
-    // Step 1: Extract audio (video files are too large for Groq's 25MB limit)
+    // Step 1: Extract audio (video files are too large for OpenAI's 25MB limit)
     const fileSize = fs.statSync(filePath).size / (1024 * 1024);
     let audioPath = filePath;
 
@@ -85,8 +85,8 @@ export const groqTranscriber: Transcriber = {
 
     // Step 3: Transcribe
     const file = fs.createReadStream(audioFile);
-    const transcript = await groq.audio.transcriptions.create({
-      model: "whisper-large-v3-turbo",
+    const transcript = await openai.audio.transcriptions.create({
+      model: "whisper-1",
       file,
       response_format: "verbose_json",
       timestamp_granularities: ["segment"],
@@ -109,8 +109,8 @@ export const groqTranscriber: Transcriber = {
 
       for (let i = 1; i < chunks.length; i++) {
         const chunkFile = fs.createReadStream(chunks[i]);
-        const chunkTranscript = await groq.audio.transcriptions.create({
-          model: "whisper-large-v3-turbo",
+        const chunkTranscript = await openai.audio.transcriptions.create({
+          model: "whisper-1",
           file: chunkFile,
           response_format: "verbose_json",
           timestamp_granularities: ["segment"],

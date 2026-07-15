@@ -1,10 +1,10 @@
-import { groqTranscriber } from "./groq";
+import { openaiTranscriber } from "./openai";
 import { stubTranscriber } from "./stub";
 import type { Transcriber } from "./types";
 
 function getTranscriber(): Transcriber {
-  if (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== "gsk_your_key_here") {
-    return groqTranscriber;
+  if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== "sk-your-key-here") {
+    return openaiTranscriber;
   }
   return stubTranscriber;
 }
