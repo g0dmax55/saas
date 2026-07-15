@@ -1,29 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type Sub = { id: string; start: number; end: number; text: string };
 
-const AUTO_GENERATED: Sub[] = [
-  { id: "1", start: 0, end: 2.1, text: "Welcome to my channel everyone" },
-  { id: "2", start: 2.1, end: 4.3, text: "today I'm going to show you" },
-  { id: "3", start: 4.3, end: 6.8, text: "how to make the perfect" },
-  { id: "4", start: 6.8, end: 9.2, text: "homemade pasta from scratch" },
-  { id: "5", start: 9.2, end: 11.5, text: "it's actually super easy" },
-  { id: "6", start: 11.5, end: 13.8, text: "let's get started right away" },
-  { id: "7", start: 13.8, end: 16.2, text: "first you need some flour" },
-  { id: "8", start: 16.2, end: 18.5, text: "and two fresh eggs" },
-  { id: "9", start: 18.5, end: 21.0, text: "mix them together well" },
-  { id: "10", start: 21.0, end: 24.0, text: "knead the dough for ten minutes" },
-];
-
 const STYLES = [
-  { id: "clean", label: "Clean", preview: "bg-black/60 text-white rounded-lg px-3 py-1" },
-  { id: "bold", label: "Bold", preview: "bg-[#96FF1A] text-[#121212] font-extrabold rounded-lg px-3 py-1" },
-  { id: "gradient", label: "Gradient", preview: "bg-gradient-to-r from-[#96FF1A] to-[#00c6ff] text-white font-bold rounded-lg px-3 py-1" },
-  { id: "minimal", label: "Minimal", preview: "bg-transparent text-white/90 text-sm" },
-  { id: "outline", label: "Outline", preview: "bg-transparent text-[#96FF1A] [text-shadow:0_0_10px_rgba(150,255,26,0.5)] text-lg font-bold" },
+  { id: "clean", label: "Clean", preview: "text-white font-bold text-lg [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]" },
 ];
 
 const FPS = 30;
@@ -43,15 +26,20 @@ function formatSeconds(s: number): string {
   return `${m}:${sec.padStart(4, "0")}`;
 }
 
-export default function EditorPage() {
+function EditorContent() {
   const router = useRouter();
-  const [subs, setSubs] = useState<Sub[]>(AUTO_GENERATED);
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get("id");
+  const [subs, setSubs] = useState<Sub[]>([]);
   const [activeSub, setActiveSub] = useState<string | null>(null);
-  const [selectedStyle, setSelectedStyle] = useState("bold");
-  const [currentTime, setCurrentTime] = useState(4.5);
+  const [selectedStyle, setSelectedStyle] = useState("clean");
+  const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [zoom, setZoom] = useState(2);
-  const duration = 24.0;
+  const [projectName, setProjectName] = useState("");
+  const [duration, setDuration] = useState(24.0);
+  const [saved, setSaved] = useState(false);
+  const [videoPath, setVideoPath] = useState("");
 
   const active = subs.find((s) => s.id === activeSub);
   const style = STYLES.find((s) => s.id === selectedStyle)!;
@@ -65,10 +53,73 @@ export default function EditorPage() {
   );
 
   const jumpToActive = useCallback(() => {
-    if (active) {
-      setCurrentTime(active.start);
-    }
+    if (active) setCurrentTime(active.start);
   }, [active]);
+
+  // Load subtitles from API
+  useEffect(() => {
+    if (!projectId) return;
+    let cancelled = false;
+    async function load() {
+      try {
+        const [subsRes, projRes] = await Promise.allSettled([
+          fetch(`/api/subtitles/${projectId}`),
+          fetch(`/api/projects/${projectId}`),
+        ]);
+
+        if (cancelled) return;
+
+        // Load subtitles (may not exist yet for new projects)
+        if (subsRes.status === "fulfilled" && subsRes.value.ok) {
+          const subsData = await subsRes.value.json();
+          if (subsData.subtitles) {
+            const mapped: Sub[] = subsData.subtitles.map((s: Record<string, unknown>, i: number) => ({
+              id: String(i + 1),
+              start: Number(s.startTime ?? 0),
+              end: Number(s.endTime ?? 0),
+              text: String(s.text ?? ""),
+            }));
+            setSubs(mapped);
+            if (mapped.length > 0) {
+              setActiveSub(mapped[0].id);
+              setDuration(mapped[mapped.length - 1].end + 1);
+            }
+          }
+        }
+
+        // Load project (always needed for video)
+        if (projRes.status === "fulfilled" && projRes.value.ok) {
+          const projData = await projRes.value.json();
+          if (projData.project) {
+            setProjectName(projData.project.fileName || "");
+            setVideoPath(projData.project.videoPath || "");
+            setSelectedStyle(projData.project.style || "clean");
+          }
+        }
+      } catch {
+        // subs stay empty
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [projectId]);
+
+  // Save subtitles to API
+  const saveSubtitles = async () => {
+    if (!projectId) return;
+    try {
+      const payload = subs.map((s) => ({ start: s.start, end: s.end, text: s.text }));
+      await fetch(`/api/subtitles/${projectId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subtitles: payload }),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      // silent
+    }
+  };
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -128,6 +179,23 @@ export default function EditorPage() {
     };
   }, [isPlaying, duration, stepTime, activeSub, jumpToActive]);
 
+  // Sync video playback
+  useEffect(() => {
+    const video = document.querySelector<HTMLVideoElement>(".preview-video");
+    if (!video) return;
+    if (isPlaying) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [isPlaying]);
+
+  useEffect(() => {
+    const video = document.querySelector<HTMLVideoElement>(".preview-video");
+    if (!video || isPlaying) return;
+    video.currentTime = currentTime;
+  }, [currentTime, isPlaying]);
+
   const updateSub = (id: string, field: keyof Sub, value: string | number) => {
     setSubs((prev) => prev.map((s) => (s.id === id ? { ...s, [field]: value } : s)));
   };
@@ -179,14 +247,20 @@ export default function EditorPage() {
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4">
         <div className="flex items-center gap-3">
           <span className="text-sm font-bold text-[#121212]">Review Subtitles</span>
-          <span className="text-xs text-[#79716B]">— pasta_tutorial.mp4</span>
+          <span className="text-xs text-[#79716B]">— {projectName || "No project loaded"}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-[#E6FFC8] px-2.5 py-0.5 text-[10px] font-semibold text-[#121212]">
-            Lang: English · {subs.length} captions · {FPS}fps
+            Lang: English • {subs.length} captions
           </span>
           <button
-            onClick={() => router.push("/dashboard/export")}
+            onClick={saveSubtitles}
+            className="rounded-full border border-gray-200 px-4 py-1.5 text-xs font-semibold text-[#121212] hover:bg-gray-50 transition-colors"
+          >
+            {saved ? "✓ Saved" : "Save Changes"}
+          </button>
+          <button
+            onClick={() => router.push(`/dashboard/export?id=${projectId}`)}
             className="rounded-full bg-[#96FF1A] px-4 py-1.5 text-xs font-semibold text-[#121212] hover:brightness-95"
           >
             Export
@@ -224,8 +298,21 @@ export default function EditorPage() {
 
         {/* Center: Preview */}
         <div className="flex flex-1 items-center justify-center bg-[#f0f0f0] p-4">
-          <div className="relative aspect-[9/16] h-full max-h-[460px] overflow-hidden rounded-2xl bg-black shadow-2xl">
-            <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a2e] via-[#16213e] to-[#0f3460]" />
+          <div className="relative aspect-[9/16] h-full max-h-[600px] overflow-hidden rounded-2xl bg-black shadow-2xl">
+            {videoPath ? (
+              <video
+                src={videoPath}
+                className="preview-video absolute inset-0 h-full w-full object-cover"
+                playsInline
+                preload="auto"
+                controls
+                onTimeUpdate={(e) => {
+                  if (isPlaying) setCurrentTime(e.currentTarget.currentTime);
+                }}
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a2e] via-[#16213e] to-[#0f3460]" />
+            )}
 
             <div className="absolute inset-x-0 bottom-16 flex justify-center px-4">
               {(() => {
@@ -308,10 +395,19 @@ export default function EditorPage() {
               </button>
               <div>
                 <label className="block text-[11px] font-medium text-[#79716B] mb-2">Style</label>
-                <div className="space-y-1 rounded-lg bg-[#121212] p-1.5">
+                <div className="space-y-1.5">
                   {STYLES.map((s) => (
-                    <button key={s.id} onClick={() => setSelectedStyle(s.id)} className={`w-full rounded-lg px-3 py-1.5 text-left text-xs font-semibold transition-all ${selectedStyle === s.id ? "ring-1 ring-[#96FF1A]" : "hover:ring-1 hover:ring-gray-200"} ${s.preview}`}>
-                      {s.label}
+                    <button
+                      key={s.id}
+                      onClick={() => setSelectedStyle(s.id)}
+                      className={`w-full overflow-hidden rounded-lg transition-all ${selectedStyle === s.id ? "ring-2 ring-[#96FF1A]" : "ring-1 ring-gray-200 hover:ring-gray-300"}`}
+                    >
+                      <div className="relative flex h-16 items-center justify-center bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]">
+                        <span className={`text-center text-sm ${s.preview}`}>Sample caption</span>
+                      </div>
+                      <div className="bg-white px-3 py-1 text-left text-[10px] font-medium text-[#79716B]">
+                        {s.label}
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -461,5 +557,24 @@ export default function EditorPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function EditorPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-gray-200 bg-white px-4">
+          <div className="h-4 w-24 rounded bg-gray-200 animate-pulse" />
+          <div className="h-4 w-32 rounded bg-gray-100 animate-pulse" />
+          <div className="ml-auto h-8 w-20 rounded-full bg-gray-200 animate-pulse" />
+        </header>
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-sm text-[#79716B]">Loading subtitles...</p>
+        </div>
+      </div>
+    }>
+      <EditorContent />
+    </Suspense>
   );
 }

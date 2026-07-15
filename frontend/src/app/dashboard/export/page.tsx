@@ -1,67 +1,86 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
-function generateSRT() {
-  return `1
-00:00:00,000 --> 00:00:02,100
-Welcome to my channel everyone
-
-2
-00:00:02,100 --> 00:00:04,300
-today I'm going to show you
-
-3
-00:00:04,300 --> 00:00:06,800
-how to make the perfect
-
-4
-00:00:06,800 --> 00:00:09,200
-homemade pasta from scratch
-
-5
-00:00:09,200 --> 00:00:11,500
-it's actually super easy
-
-6
-00:00:11,500 --> 00:00:13,800
-let's get started right away
-
-7
-00:00:13,800 --> 00:00:16,200
-first you need some flour
-
-8
-00:00:16,200 --> 00:00:18,500
-and two fresh eggs
-
-9
-00:00:18,500 --> 00:00:21,000
-mix them together well
-
-10
-00:00:21,000 --> 00:00:24,000
-knead the dough for ten minutes
-`;
+function formatSRTTime(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  const ms = Math.floor((seconds % 1) * 1000);
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")},${String(ms).padStart(3, "0")}`;
 }
 
-export default function ExportPage() {
+type Sub = { id: string; start: number; end: number; text: string };
+
+function ExportContent() {
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get("id");
+  const [subs, setSubs] = useState<Sub[]>([]);
+  const [projectName, setProjectName] = useState("");
+  const [totalDuration, setTotalDuration] = useState(0);
   const [format, setFormat] = useState("mp4");
   const [quality, setQuality] = useState("1080p");
-  const [burnSubtitles, setBurnSubtitles] = useState(true);
   const [exporting, setExporting] = useState(false);
 
-  const handleExport = () => {
+  useEffect(() => {
+    if (!projectId) return;
+    async function load() {
+      try {
+        const res = await fetch(`/api/subtitles/${projectId}`);
+        const data = await res.json();
+        if (data.subtitles) {
+          const mapped: Sub[] = data.subtitles.map((s: Record<string, unknown>, i: number) => ({
+            id: String(i + 1),
+            start: Number(s.startTime ?? 0),
+            end: Number(s.endTime ?? 0),
+            text: String(s.text ?? ""),
+          }));
+          setSubs(mapped);
+          if (mapped.length > 0) {
+            setTotalDuration(Math.ceil(mapped[mapped.length - 1].end));
+          }
+        }
+        const projRes = await fetch(`/api/projects/${projectId}`);
+        const projData = await projRes.json();
+        if (projData.project) {
+          setProjectName(projData.project.fileName || "");
+        }
+      } catch {
+        // subs stay empty
+      }
+    }
+    load();
+  }, [projectId]);
+
+  function generateSRT(): string {
+    return subs.map((s, i) =>
+      `${i + 1}\n${formatSRTTime(s.start)} --> ${formatSRTTime(s.end)}\n${s.text}\n`
+    ).join("\n");
+  }
+
+  const handleExport = async () => {
+    if (!projectId) return;
     setExporting(true);
-    setTimeout(() => setExporting(false), 3000);
+    try {
+      const a = document.createElement("a");
+      a.href = `/api/export/${projectId}`;
+      a.download = `${projectName || "video"}_subtitled.mp4`;
+      a.click();
+    } catch {
+      // silent
+    }
+    setTimeout(() => setExporting(false), 2000);
   };
 
   const handleDownloadSRT = () => {
-    const blob = new Blob([generateSRT()], { type: "text/plain" });
+    const srtContent = generateSRT();
+    if (!srtContent) return;
+    const blob = new Blob([srtContent], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "pasta_tutorial_subtitles.srt";
+    a.download = `${projectName || "subtitles"}.srt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -81,8 +100,8 @@ export default function ExportPage() {
                 <polygon points="8 5 19 12 8 19" fill="currentColor" fillOpacity="0.3" />
               </svg>
             </div>
-            <p className="mt-3 text-sm font-medium text-white/70">pasta_tutorial.mp4</p>
-            <p className="mt-0.5 text-xs text-white/40">10 captions · 24.0s · English</p>
+            <p className="mt-3 text-sm font-medium text-white/70">{projectName || "No file loaded"}</p>
+            <p className="mt-0.5 text-xs text-white/40">{subs.length} captions · {totalDuration}s</p>
           </div>
         </div>
 
@@ -106,13 +125,6 @@ export default function ExportPage() {
                 ))}
               </div>
             </div>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" checked={burnSubtitles} onChange={(e) => setBurnSubtitles(e.target.checked)} className="h-4 w-4 rounded accent-[#96FF1A]" />
-              <div>
-                <p className="text-sm font-medium text-[#121212]">Burn subtitles into video</p>
-                <p className="text-xs text-[#79716B]">Subtitles permanently embedded — visible on any platform</p>
-              </div>
-            </label>
           </div>
         </div>
 
@@ -133,12 +145,14 @@ export default function ExportPage() {
             </svg>
             Download .srt file
           </button>
-          <details className="mt-3">
-            <summary className="cursor-pointer text-[10px] text-[#79716B] hover:text-[#121212]">Preview .srt content</summary>
-            <pre className="mt-2 max-h-40 overflow-y-auto rounded-lg bg-gray-50 p-3 font-mono text-[10px] text-[#79716B] leading-relaxed select-all">
+          {subs.length > 0 && (
+            <details className="mt-3">
+              <summary className="cursor-pointer text-[10px] text-[#79716B] hover:text-[#121212]">Preview .srt content</summary>
+              <pre className="mt-2 max-h-40 overflow-y-auto rounded-lg bg-gray-50 p-3 font-mono text-[10px] text-[#79716B] leading-relaxed select-all">
 {generateSRT()}
-            </pre>
-          </details>
+              </pre>
+            </details>
+          )}
         </div>
 
         {/* File info */}
@@ -147,7 +161,7 @@ export default function ExportPage() {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between"><span className="text-[#79716B]">Format</span><span className="font-medium text-[#121212] uppercase">{format}</span></div>
             <div className="flex justify-between"><span className="text-[#79716B]">Resolution</span><span className="font-medium text-[#121212]">{quality}</span></div>
-            <div className="flex justify-between"><span className="text-[#79716B]">Subtitles</span><span className="font-medium text-[#121212]">{burnSubtitles ? "Burned in" : "Separate .srt"}</span></div>
+            <div className="flex justify-between"><span className="text-[#79716B]">Subtitles</span><span className="font-medium text-[#121212]">Burned in</span></div>
             <div className="flex justify-between"><span className="text-[#79716B]">Language</span><span className="font-medium text-[#121212]">English</span></div>
             <div className="flex justify-between"><span className="text-[#79716B]">Est. size</span><span className="font-medium text-[#121212]">~8.2 MB</span></div>
           </div>
@@ -197,5 +211,22 @@ export default function ExportPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ExportPage() {
+  return (
+    <Suspense fallback={
+    <div className="mx-auto max-w-[640px] p-5 md:p-8 min-h-0 overflow-y-auto">
+        <h1 className="text-xl font-semibold text-[#121212] md:text-2xl">Export</h1>
+        <div className="mt-8 space-y-6 animate-pulse">
+          <div className="h-52 rounded-xl bg-gray-200" />
+          <div className="h-40 rounded-xl bg-gray-100" />
+          <div className="h-32 rounded-xl bg-gray-100" />
+        </div>
+      </div>
+    }>
+      <ExportContent />
+    </Suspense>
   );
 }

@@ -4,82 +4,87 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 
-const INITIAL_PROJECTS = [
-  {
-    id: "1",
-    title: "Product launch reel",
-    lang: "English",
-    style: "Bold",
-    status: "Done",
-    date: "2d ago",
-    duration: "0:18",
-    gradient: "from-indigo-500 to-purple-600",
-    bg: "bg-indigo-100",
-    icon: "text-indigo-600",
-  },
-  {
-    id: "2",
-    title: "TikTok cooking tutorial",
-    lang: "Spanish",
-    style: "Clean",
-    status: "Done",
-    date: "5d ago",
-    duration: "0:42",
-    gradient: "from-orange-400 to-red-500",
-    bg: "bg-orange-100",
-    icon: "text-orange-600",
-  },
-  {
-    id: "3",
-    title: "Instagram story ad",
-    lang: "English",
-    style: "Gradient",
-    status: "Done",
-    date: "1w ago",
-    duration: "0:15",
-    gradient: "from-cyan-400 to-blue-500",
-    bg: "bg-cyan-100",
-    icon: "text-cyan-600",
-  },
-  {
-    id: "4",
-    title: "Vlog day 12",
-    lang: "French",
-    style: "Minimal",
-    status: "Draft",
-    date: "1w ago",
-    duration: "1:20",
-    gradient: "from-rose-400 to-pink-500",
-    bg: "bg-rose-100",
-    icon: "text-rose-600",
-  },
-  {
-    id: "5",
-    title: "Fitness reel",
-    lang: "English",
-    style: "Bold",
-    status: "Done",
-    date: "2w ago",
-    duration: "0:30",
-    gradient: "from-emerald-400 to-teal-500",
-    bg: "bg-emerald-100",
-    icon: "text-emerald-600",
-  },
+function formatRelative(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  if (days === 0) return "Today";
+  if (days === 1) return "1d ago";
+  if (days < 7) return `${days}d ago`;
+  if (days < 30) return `${Math.floor(days / 7)}w ago`;
+  return date.toLocaleDateString();
+}
+
+function formatDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+type ProjectCard = {
+  id: string;
+  title: string;
+  lang: string;
+  style: string;
+  status: string;
+  date: string;
+  duration: string;
+  gradient: string;
+  bg: string;
+  icon: string;
+};
+
+const GRADIENTS = [
+  { gradient: "from-indigo-500 to-purple-600", bg: "bg-indigo-100", icon: "text-indigo-600" },
+  { gradient: "from-orange-400 to-red-500", bg: "bg-orange-100", icon: "text-orange-600" },
+  { gradient: "from-cyan-400 to-blue-500", bg: "bg-cyan-100", icon: "text-cyan-600" },
+  { gradient: "from-rose-400 to-pink-500", bg: "bg-rose-100", icon: "text-rose-600" },
+  { gradient: "from-emerald-400 to-teal-500", bg: "bg-emerald-100", icon: "text-emerald-600" },
 ];
 
 export default function ProjectsPage() {
   const [ready, setReady] = useState(false);
-  const [projects, setProjects] = useState(INITIAL_PROJECTS);
+  const [projects, setProjects] = useState<ProjectCard[]>([]);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   useEffect(() => {
-    const t = setTimeout(() => setReady(true), 100);
-    return () => clearTimeout(t);
+    async function load() {
+      try {
+        const res = await fetch("/api/projects");
+        const data = await res.json();
+        if (data.projects) {
+          const mapped = data.projects.map((p: Record<string, unknown>, i: number) => ({
+            id: String(p._id),
+            title: String(p.title || ""),
+            lang: String(p.language || "Detecting..."),
+            style: String(p.style || "Bold"),
+            status: String(p.status === "ready" ? "Done" : p.status === "processing" ? "Processing" : "Draft"),
+            date: formatRelative(String(p.createdAt)),
+            duration: p.duration ? formatDuration(Number(p.duration)) : "0:00",
+            gradient: GRADIENTS[i % GRADIENTS.length].gradient,
+            bg: GRADIENTS[i % GRADIENTS.length].bg,
+            icon: GRADIENTS[i % GRADIENTS.length].icon,
+          }));
+          setProjects(mapped);
+        }
+      } catch {
+        setProjects([]);
+      } finally {
+        setReady(true);
+      }
+    }
+    load();
   }, []);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     setProjects((prev) => prev.filter((p) => p.id !== id));
     setOpenMenu(null);
+    try {
+      await fetch(`/api/projects/${id}`, { method: "DELETE" });
+    } catch {
+      // silent fail — already removed from UI
+    }
   };
 
   if (!ready) {
@@ -278,7 +283,7 @@ export default function ProjectsPage() {
 
               <div className="mt-3 flex gap-2">
                 <Link
-                  href="/dashboard/editor"
+                   href={`/dashboard/editor?id=${p.id}`}
                   className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 py-2 text-xs font-medium text-[#121212] transition-colors hover:bg-gray-50 hover:border-gray-300"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -287,7 +292,7 @@ export default function ProjectsPage() {
                   Edit
                 </Link>
                 <Link
-                  href="/dashboard/export"
+                  href={`/dashboard/export?id=${p.id}`}
                   className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#96FF1A] py-2 text-xs font-semibold text-[#121212] transition-colors hover:brightness-95"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -12,16 +12,13 @@ const STEPS = [
 ];
 
 const STYLE_OPTIONS = [
-  { id: "clean", label: "Clean", preview: "bg-black/60 text-white rounded-lg px-3 py-1 text-xs font-medium" },
-  { id: "bold", label: "Bold", preview: "bg-[#96FF1A] text-[#121212] font-bold rounded-lg px-3 py-1 text-xs" },
-  { id: "gradient", label: "Gradient", preview: "bg-gradient-to-r from-[#96FF1A] to-[#00c6ff] text-white font-bold rounded-lg px-3 py-1 text-xs" },
-  { id: "minimal", label: "Minimal", preview: "text-white text-xs" },
+  { id: "clean", label: "Clean", preview: "text-white font-bold text-lg [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]" },
 ];
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [selectedStyle, setSelectedStyle] = useState<string | null>("bold");
+  const [selectedStyle, setSelectedStyle] = useState<string | null>("clean");
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);

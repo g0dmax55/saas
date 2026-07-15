@@ -71,9 +71,32 @@ export default function SignupPage() {
 
   const activePlan = PLANS.find((p) => p.id === selectedPlan) || PLANS[1];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push("/onboarding");
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Registration failed");
+      }
+
+      router.push("/onboarding");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -231,11 +254,15 @@ export default function SignupPage() {
             </div>
 
             {/* Submit Button */}
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
             <button
               type="submit"
-              className="mt-2 w-full rounded-xl bg-[#323232] py-3.5 text-sm font-semibold text-white transition-all hover:bg-[#1a1a1a]"
+              disabled={loading}
+              className="mt-2 w-full rounded-xl bg-[#323232] py-3.5 text-sm font-semibold text-white transition-all hover:bg-[#1a1a1a] disabled:opacity-60"
             >
-              {activePlan.cta}
+              {loading ? "Creating account..." : activePlan.cta}
             </button>
 
             {/* Divider */}

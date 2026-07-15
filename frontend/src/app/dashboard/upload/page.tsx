@@ -4,15 +4,6 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 
-const AUTO_SUBS = [
-  { text: "Welcome to my channel everyone" },
-  { text: "today I'm going to show you" },
-  { text: "how to make the perfect" },
-  { text: "homemade pasta from scratch" },
-  { text: "it's actually super easy" },
-  { text: "let's get started right away" },
-];
-
 export default function UploadPage() {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
@@ -20,6 +11,9 @@ export default function UploadPage() {
   const [step, setStep] = useState<"upload" | "processing" | "done">("upload");
   const [detectedLang, setDetectedLang] = useState("");
   const [wordCount, setWordCount] = useState(0);
+  const [autoSubs, setAutoSubs] = useState<{ text: string }[]>([]);
+  const [projectId, setProjectId] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleDrop = (e: React.DragEvent) => {
@@ -29,15 +23,51 @@ export default function UploadPage() {
     if (f && f.type.startsWith("video/")) setFile(f);
   };
 
-  const handleProcess = () => {
+  const handleProcess = async () => {
     if (!file) return;
     setStep("processing");
-    // Simulate AI processing
-    setTimeout(() => {
-      setDetectedLang("English");
-      setWordCount(47);
+    setErrorMsg("");
+
+    try {
+      // 1. Upload file
+      const formData = new FormData();
+      formData.append("file", file);
+      const uploadRes = await fetch("/api/upload", { method: "POST", body: formData, credentials: "include" });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) throw new Error(uploadData.error || "Upload failed");
+
+      // 2. Create project
+      const projectRes = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: file.name.replace(/\.[^.]+$/, ""),
+          fileName: file.name,
+          videoPath: uploadData.filePath,
+        }),
+        credentials: "include",
+      });
+      const projectData = await projectRes.json();
+      if (!projectRes.ok) throw new Error(projectData.error || "Project creation failed");
+
+      // 3. Process with Groq Whisper
+      const processRes = await fetch(`/api/process/${projectData.project._id}`, { method: "POST", credentials: "include" });
+      const processData = await processRes.json();
+      if (!processRes.ok) throw new Error(processData.error || "Processing failed");
+
+      // 4. Load subtitles
+      const subsRes = await fetch(`/api/subtitles/${projectData.project._id}`, { credentials: "include" });
+      const subsData = await subsRes.json();
+
+      setDetectedLang(processData.language);
+      setWordCount(processData.wordCount);
+      setAutoSubs(subsData.subtitles?.map((s: { text: string }) => ({ text: s.text })) ?? []);
+      setProjectId(projectData.project._id);
       setStep("done");
-    }, 3000);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Something went wrong");
+      setStep("upload");
+    }
   };
 
   return (
@@ -82,6 +112,10 @@ export default function UploadPage() {
               </>
             )}
           </div>
+
+          {errorMsg && (
+            <p className="text-center text-sm text-red-500">{errorMsg}</p>
+          )}
 
           <button
             onClick={handleProcess}
@@ -212,27 +246,27 @@ export default function UploadPage() {
 
             <div className="mt-5 space-y-2">
               <p className="text-xs font-medium text-[#79716B]">Auto-generated captions preview</p>
-              {AUTO_SUBS.slice(0, 4).map((s, i) => (
+              {autoSubs.slice(0, 4).map((s, i) => (
                 <div key={i} className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-1.5 text-xs text-[#121212]">
                   <span className="text-[10px] text-[#79716B] font-mono">{i + 1}</span>
                   <span>{s.text}</span>
                 </div>
               ))}
-              {AUTO_SUBS.length > 4 && (
-                <p className="text-[10px] text-[#79716B] text-center">+{AUTO_SUBS.length - 4} more captions</p>
+              {autoSubs.length > 4 && (
+                <p className="text-[10px] text-[#79716B] text-center">+{autoSubs.length - 4} more captions</p>
               )}
             </div>
           </div>
 
           <div className="flex gap-3">
             <button
-              onClick={() => router.push("/dashboard/editor")}
+              onClick={() => router.push(`/dashboard/editor?id=${projectId}`)}
               className="flex-1 rounded-full bg-[#96FF1A] py-3 text-sm font-semibold text-[#121212] hover:brightness-95"
             >
               Review &amp; Edit Subtitles
             </button>
             <button
-              onClick={() => router.push("/dashboard/export")}
+              onClick={() => router.push(`/dashboard/export?id=${projectId}`)}
               className="flex-1 rounded-full border border-gray-300 py-3 text-sm font-semibold text-[#121212] hover:bg-gray-50"
             >
               Export Now

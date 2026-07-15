@@ -224,16 +224,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <p className="text-[11px] text-[#79716B]">john@example.com</p>
                   </div>
                   <hr className="border-gray-100" />
-                  <Link
-                    href="/login"
-                    onClick={() => setUserOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50 rounded-b-xl"
+                  <button
+                    onClick={async () => {
+                      setUserOpen(false);
+                      try {
+                        await fetch("/api/auth/logout", { method: "POST" });
+                      } catch (err) {
+                        console.error("Logout error:", err);
+                      }
+                      window.location.href = "/login";
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50 rounded-b-xl text-left cursor-pointer"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
                     </svg>
                     Logout
-                  </Link>
+                  </button>
                 </motion.div>
               )}
               </AnimatePresence>
@@ -249,7 +256,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="flex flex-1 flex-col overflow-hidden"
+              className="flex flex-1 flex-col overflow-auto"
             >
               {children}
             </motion.div>

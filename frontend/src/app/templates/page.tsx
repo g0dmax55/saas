@@ -10,44 +10,9 @@ const TEMPLATES = [
   {
     id: "clean",
     name: "Clean",
-    style: "bg-black/60 text-white rounded-lg px-4 py-1.5 text-sm",
-    desc: "Minimal white text on a semi-transparent dark background. Professional and never distracting.",
+    style: "text-white font-bold text-lg [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]",
+    desc: "Clean white text with bold font. Professional and never distracting.",
     best: "Tutorials, vlogs, educational content",
-  },
-  {
-    id: "bold",
-    name: "Bold",
-    style: "bg-[#96FF1A] text-[#121212] font-extrabold rounded-lg px-4 py-1.5 text-sm",
-    desc: "High-contrast neon green with bold text. Demands attention and stops the scroll.",
-    best: "Reels, TikTok, viral content",
-  },
-  {
-    id: "gradient",
-    name: "Gradient",
-    style: "bg-gradient-to-r from-[#96FF1A] to-[#00c6ff] text-white font-bold rounded-lg px-4 py-1.5 text-sm",
-    desc: "Colorful gradient fill from green to blue. Eye-catching and modern.",
-    best: "Lifestyle, travel, fashion",
-  },
-  {
-    id: "minimal",
-    name: "Minimal",
-    style: "bg-transparent text-white text-sm",
-    desc: "Small, subtle text with no background. Clean and non-intrusive.",
-    best: "Cinematic edits, aesthetic content",
-  },
-  {
-    id: "outline",
-    name: "Outline",
-    style: "bg-transparent text-[#96FF1A] font-bold text-sm [text-shadow:0_0_10px_rgba(150,255,26,0.5)]",
-    desc: "Neon green text with a soft glow. Edgy, modern, and instantly recognizable.",
-    best: "Gaming, tech, music videos",
-  },
-  {
-    id: "karaoke",
-    name: "Karaoke",
-    style: "text-white font-semibold text-sm",
-    desc: "Word-by-word highlight animation syncs with the speaker. Perfect for sing-alongs and tutorials.",
-    best: "Singing, speeches, presentations",
   },
 ];
 
@@ -61,7 +26,7 @@ function TemplatesContent() {
           Subtitle style templates
         </h1>
         <p className="mx-auto mt-4 max-w-lg text-[#79716B]">
-          Pick from six polished styles. Preview each one and choose what fits your content best.
+          Pick a polished style. Preview and choose what fits your content best.
         </p>
       </div>
 

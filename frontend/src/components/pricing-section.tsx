@@ -41,7 +41,7 @@ const PLANS = [
       "Auto language detection",
       "All 20+ subtitle styles",
       "Word-by-word animation",
-      "Bold, gradient & outline styles",
+      "Professional styled subtitles",
       "Export up to 1080p",
       "No watermark",
     ],
