@@ -68,12 +68,47 @@ function getStyleDef(
     // BorderStyle=3 (Opaque box), Outline=boxPadding (size of box padding), Shadow=0 (no shadow)
     // PrimaryColour=&H44FFFFFF (dimmed white text), SecondaryColour=&H00FFFFFF (bright white highlight text)
     // OutlineColour=&HFF000000 (transparent border), BackColour=&H000000FF (solid red background box)
-    const boxPadding = Math.round(3.5 * scale);
+    const boxPadding = Math.round(1.5 * scale);
     return `Style: ${styleName},Poppins,${fs},&H44FFFFFF,&H00FFFFFF,&HFF000000,&H000000FF,1,0,0,0,100,100,0,0,3,${boxPadding},0,${alignment},10,10,${marginV},1`;
   }
 
   // Bold=1, Font=Inter, Outline/Back alpha=&H33 (80% opacity black matching rgba(0,0,0,0.8))
   return `Style: ${styleName},Inter,${fs},&H00FFFFFF,&H000000FF,&H33000000,&H33000000,1,0,0,0,100,100,0,0,1,${ol},${sh},${alignment},10,10,${marginV},1`;
+}
+
+function wrapText(text: string, maxChars: number): string[] {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let currentLine = "";
+
+  for (const word of words) {
+    if (!word) continue;
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    if (testLine.length > maxChars) {
+      if (currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        lines.push(word);
+        currentLine = "";
+      }
+    } else {
+      currentLine = testLine;
+    }
+  }
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+  return lines;
+}
+
+function splitTextIntoLines(text: string, maxChars = 30): string[] {
+  const rawLines = text.split(/\r?\n/);
+  const finalLines: string[] = [];
+  for (const line of rawLines) {
+    finalLines.push(...wrapText(line, maxChars));
+  }
+  return finalLines;
 }
 
 function buildAss(
@@ -86,8 +121,37 @@ function buildAss(
   subtitleSize: number
 ): string {
   const scale = width / 360;
-  const styleDef = getStyleDef(style, scale, height, shadowIntensity, subtitlePosition, subtitleSize);
-  const styleName = style.charAt(0).toUpperCase() + style.slice(1);
+  const cleanStyleDef = getStyleDef("clean", scale, height, shadowIntensity, subtitlePosition, subtitleSize);
+  const karaokeStyleDef = getStyleDef("karaoke", scale, height, shadowIntensity, subtitlePosition, subtitleSize);
+  const styleDef = style === "karaoke" ? `${cleanStyleDef}\n${karaokeStyleDef}` : cleanStyleDef;
+
+  // Determine alignment and vertical base position
+  let posPct = 85;
+  if (typeof subtitlePosition === "number") {
+    posPct = subtitlePosition;
+  } else if (subtitlePosition === "top") {
+    posPct = 15;
+  } else if (subtitlePosition === "middle") {
+    posPct = 50;
+  }
+
+  let alignment = 2;
+  let yBase = height * 0.85; // Default bottom-center
+  if (posPct < 45) {
+    alignment = 8; // top-center
+    yBase = height * (posPct / 100);
+  } else if (posPct > 55) {
+    alignment = 2; // bottom-center
+    yBase = height * (posPct / 100);
+  } else {
+    alignment = 5; // middle-center
+    yBase = height * 0.5;
+  }
+
+  const baseSize = style === "karaoke" ? (subtitleSize || 14) * 0.857 : (subtitleSize || 16) * 0.9375;
+  const fs = Math.round(baseSize * scale);
+  const dy = Math.round(fs * 1.5); // Line spacing factor
+  const x = Math.round(width / 2);
 
   let ass = `[Script Info]
 Title: SubCaps Export
@@ -107,46 +171,106 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
   for (const s of subtitles) {
     const start = formatAssTime(s.startTime);
     const end = formatAssTime(s.endTime);
-    const cleaned = cleanText(s.text).replace(/\n\r/g, "\\N");
-    // Prepend Gaussian blur tag to emulate CSS text-shadow blur
-    const blurTag = shadowIntensity > 0 ? `{\\blur${Math.round(shadowIntensity * scale / 2)}}` : "";
     
-    let text = cleaned;
+    // Split the subtitle text into wrapped lines
+    const rawText = cleanText(s.text);
+    const lines = splitTextIntoLines(rawText, 30);
+    const N = lines.length;
+    if (N === 0) continue;
+
+    const blurTag = shadowIntensity > 0 ? `{\\blur${Math.round(shadowIntensity * scale / 2)}}` : "";
+
+    // Calculate Y coordinate for each line index
+    const getY = (lineIdx: number): number => {
+      if (alignment === 8) {
+        return Math.round(yBase + lineIdx * dy);
+      } else if (alignment === 2) {
+        return Math.round(yBase - (N - 1 - lineIdx) * dy);
+      } else {
+        return Math.round(yBase - ((N - 1) / 2 - lineIdx) * dy);
+      }
+    };
+
     if (style === "karaoke") {
-      const words = cleaned.split(" ");
-      const totalChars = cleaned.length || 1;
+      // 1. Output the Base Layer (Clean white text) for all lines of this subtitle block
+      for (let i = 0; i < N; i++) {
+        const y_i = getY(i);
+        ass += `Dialogue: 0,${start},${end},Clean,,0,0,0,,{\\pos(${x},${y_i})}${blurTag}${lines[i]}\n`;
+      }
+
+      // 2. Output the Highlight Layers (Layer 1) for each word
+      type WordInfo = {
+        text: string;
+        lineIndex: number;
+        start: number;
+        end: number;
+      };
+
+      const wordsWithLine: WordInfo[] = [];
+      const totalChars = lines.join(" ").length || 1;
       const segmentDuration = s.endTime - s.startTime;
-      let wordAss = "";
-      
-      // Track remaining duration to avoid roundoff drift
-      let remainingDurationCs = Math.round(segmentDuration * 100);
-      
-      for (let i = 0; i < words.length; i++) {
-        const word = words[i] + (i < words.length - 1 ? " " : "");
-        const wordChars = word.length;
-        
-        let wordDurCs = 0;
-        if (i === words.length - 1) {
-          wordDurCs = remainingDurationCs;
-        } else {
-          wordDurCs = Math.round((wordChars / totalChars) * segmentDuration * 100);
-          remainingDurationCs -= wordDurCs;
-        }
-        // Ensure duration is at least 1 centisecond
-        wordDurCs = Math.max(1, wordDurCs);
-        
-        if (i === 0) {
-          wordAss += `{\\4a&H00&\\kf${wordDurCs}}${word}`;
-        } else {
-          wordAss += `{\\4a&HFF&\\kf${wordDurCs}}{\\4a&H00&}${word}`;
+      let charAccumulator = 0;
+
+      for (let lineIdx = 0; lineIdx < N; lineIdx++) {
+        const lineText = lines[lineIdx];
+        const lineWords = lineText.split(" ");
+
+        for (let wIdx = 0; wIdx < lineWords.length; wIdx++) {
+          const wordText = lineWords[wIdx] + (wIdx < lineWords.length - 1 ? " " : "");
+          const wordChars = wordText.length;
+
+          const wordStartVal = s.startTime + (charAccumulator / totalChars) * segmentDuration;
+          charAccumulator += wordChars;
+          const wordEndVal = s.startTime + (charAccumulator / totalChars) * segmentDuration;
+
+          wordsWithLine.push({
+            text: wordText,
+            lineIndex: lineIdx,
+            start: wordStartVal,
+            end: wordEndVal,
+          });
         }
       }
-      text = `{\\4a&HFF&}${blurTag}${wordAss}`;
+
+      // Track accumulators per line to construct correct inline word highlights
+      for (let i = 0; i < wordsWithLine.length; i++) {
+        const activeWord = wordsWithLine[i];
+        const lineIdx = activeWord.lineIndex;
+        const y_active = getY(lineIdx);
+
+        const wordStart = formatAssTime(activeWord.start);
+        const wordEnd = formatAssTime(activeWord.end);
+
+        // Reconstruct only the active line's words, hiding inactive words on this line
+        const lineWords = lines[lineIdx].split(" ");
+        
+        // Find which word index in this line matches the active word `i`
+        const wordsBeforeOnLine = wordsWithLine
+          .slice(0, i)
+          .filter((w) => w.lineIndex === lineIdx).length;
+
+        let lineText = `{\\pos(${x},${y_active})}`;
+        for (let j = 0; j < lineWords.length; j++) {
+          const currentWord = lineWords[j] + (j < lineWords.length - 1 ? " " : "");
+          if (j === wordsBeforeOnLine) {
+            // Active word: render normally (white text + red box outline)
+            const wordDurCs = Math.max(1, Math.round((activeWord.end - activeWord.start) * 100));
+            lineText += `{\\1a&H00&\\3a&H00&\\4a&H00&\\kf${wordDurCs}}${currentWord}`;
+          } else {
+            // Inactive word on the active line: fully transparent
+            lineText += `{\\1a&HFF&\\3a&HFF&\\4a&HFF&}${currentWord}`;
+          }
+        }
+
+        ass += `Dialogue: 1,${wordStart},${wordEnd},Karaoke,,0,0,0,,${lineText}\n`;
+      }
     } else {
-      text = `${blurTag}${cleaned}`;
+      // Clean style: output each line stacked at its computed Y position
+      for (let i = 0; i < N; i++) {
+        const y_i = getY(i);
+        ass += `Dialogue: 0,${start},${end},Clean,,0,0,0,,{\\pos(${x},${y_i})}${blurTag}${lines[i]}\n`;
+      }
     }
-    
-    ass += `Dialogue: 0,${start},${end},${styleName},,0,0,0,,${text}\n`;
   }
 
   return ass;

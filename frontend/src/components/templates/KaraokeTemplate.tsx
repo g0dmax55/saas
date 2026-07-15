@@ -6,9 +6,10 @@ interface KaraokeTemplateProps {
   start: number;
   end: number;
   subtitleSize?: number;
+  previewWidth?: number;
 }
 
-export function KaraokeTemplate({ text, currentTime, start, end, subtitleSize = 14 }: KaraokeTemplateProps) {
+export function KaraokeTemplate({ text, currentTime, start, end, subtitleSize = 14, previewWidth = 337.5 }: KaraokeTemplateProps) {
   const words = text.split(" ");
   const totalChars = text.length || 1;
   const segmentDuration = end - start;
@@ -23,14 +24,18 @@ export function KaraokeTemplate({ text, currentTime, start, end, subtitleSize = 
     return { text: wordWithSpace, start: wordStart, end: wordEnd };
   });
 
+  const baseSize = subtitleSize * 0.857;
+  const computedFontSize = baseSize * (previewWidth / 360);
+
   return (
     <div
-      className="max-w-[280px] text-center font-extrabold text-white"
+      className="text-center font-extrabold text-white mx-auto"
       style={{
         fontFamily: "var(--font-poppins), var(--font-inter), sans-serif",
-        fontSize: `${subtitleSize}px`,
-        lineHeight: "1.3",
+        fontSize: `${computedFontSize}px`,
+        lineHeight: "1.6",
         whiteSpace: "pre-wrap",
+        maxWidth: "83%",
       }}
     >
       {wordData.map((wd, idx) => {

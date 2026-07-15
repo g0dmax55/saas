@@ -4,9 +4,10 @@ interface CleanTemplateProps {
   text: string;
   shadowIntensity: number;
   subtitleSize?: number;
+  previewWidth?: number;
 }
 
-export function CleanTemplate({ text, shadowIntensity, subtitleSize = 16 }: CleanTemplateProps) {
+export function CleanTemplate({ text, shadowIntensity, subtitleSize = 16, previewWidth = 337.5 }: CleanTemplateProps) {
   const baseShadow = shadowIntensity > 0
     ? [
         `0 0 ${shadowIntensity * 0.5}px rgba(0,0,0,0.9)`,
@@ -17,12 +18,16 @@ export function CleanTemplate({ text, shadowIntensity, subtitleSize = 16 }: Clea
       ].join(", ")
     : "none";
 
+  const baseSize = subtitleSize * 0.9375;
+  const computedFontSize = baseSize * (previewWidth / 360);
+
   return (
     <span
-      className="text-center font-bold text-white"
+      className="text-center font-bold text-white block mx-auto"
       style={{
         textShadow: baseShadow,
-        fontSize: `${subtitleSize}px`,
+        fontSize: `${computedFontSize}px`,
+        maxWidth: "83%",
       }}
     >
       {text}

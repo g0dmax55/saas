@@ -45,10 +45,16 @@ function EditorContent() {
   const [videoPath, setVideoPath] = useState("");
   const [shadowIntensity, setShadowIntensity] = useState(1);
   const [subtitlePosition, setSubtitlePosition] = useState<number>(85);
+  const [subtitleSize, setSubtitleSize] = useState<number>(16);
   const [videoError, setVideoError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState<number>(9 / 16);
+  const [previewWidth, setPreviewWidth] = useState<number>(337.5);
   const videoRef = useRef<HTMLVideoElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
+  const previewChildRef = useRef<HTMLDivElement>(null);
 
   const active = subs.find((s) => s.id === activeSub);
 
@@ -103,6 +109,7 @@ function EditorContent() {
             setVideoPath(projData.project.videoPath || "");
             setSelectedStyle(projData.project.style || "clean");
             setShadowIntensity(projData.project.shadowIntensity ?? 3);
+            setSubtitleSize(projData.project.subtitleSize ?? 16);
             const rawPos = projData.project.subtitlePosition;
             if (rawPos === "top") setSubtitlePosition(15);
             else if (rawPos === "middle") setSubtitlePosition(50);
@@ -120,7 +127,10 @@ function EditorContent() {
 
   // Reset video error state when the video path changes
   useEffect(() => {
-    setVideoError(false);
+    if (videoPath) {
+      const timer = setTimeout(() => setVideoError(false), 0);
+      return () => clearTimeout(timer);
+    }
   }, [videoPath]);
 
   // Save subtitles to API
@@ -136,7 +146,7 @@ function EditorContent() {
       await fetch(`/api/projects/${projectId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shadowIntensity, subtitlePosition }),
+        body: JSON.stringify({ shadowIntensity, subtitlePosition, subtitleSize }),
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -170,6 +180,20 @@ function EditorContent() {
       });
     } catch (err) {
       console.error("Failed to save subtitle position:", err);
+    }
+  };
+
+  const updateSubtitleSize = async (value: number) => {
+    setSubtitleSize(value);
+    if (!projectId) return;
+    try {
+      await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subtitleSize: value }),
+      });
+    } catch (err) {
+      console.error("Failed to save subtitle size:", err);
     }
   };
 
@@ -296,6 +320,24 @@ function EditorContent() {
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
+  // ResizeObserver to track exact preview width for pixel-perfect subtitle scaling
+  useEffect(() => {
+    const child = previewChildRef.current;
+    if (!child) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        if (width > 0) {
+          setPreviewWidth(width);
+        }
+      }
+    });
+
+    observer.observe(child);
+    return () => observer.disconnect();
+  }, []);
+
   const toggleFullscreen = () => {
     const container = previewContainerRef.current;
     if (!container) return;
@@ -383,7 +425,7 @@ function EditorContent() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Subtitle list */}
-        <aside className="w-72 shrink-0 overflow-y-auto border-r border-gray-200 bg-white p-3">
+        <aside className={`h-full border-r border-gray-200 bg-white flex flex-col transition-all duration-300 overflow-y-auto shrink-0 ${isLeftSidebarCollapsed ? "w-0 border-r-0 p-0 overflow-hidden" : "w-72 p-3"}`}>
           <div className="mb-3 flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wider text-[#79716B]">
               Captions ({subs.length})
@@ -410,7 +452,24 @@ function EditorContent() {
         </aside>
 
         {/* Center: Preview */}
-        <div className="flex flex-1 items-center justify-center bg-[#f0f0f0] p-4">
+        <div className="relative flex flex-1 items-center justify-center bg-[#f0f0f0] p-4">
+          {/* Floating Collapse/Expand Left Sidebar Button */}
+          <button
+            onClick={() => setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed)}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white border border-gray-200 shadow-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all hover:scale-105 active:scale-95"
+            title={isLeftSidebarCollapsed ? "Expand Subtitle Panel" : "Collapse Subtitle Panel"}
+          >
+            {isLeftSidebarCollapsed ? (
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              </svg>
+            ) : (
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+              </svg>
+            )}
+          </button>
+
           <div
             ref={previewContainerRef}
             className={`flex items-center justify-center ${
@@ -418,11 +477,13 @@ function EditorContent() {
             }`}
           >
             <div
-              className={`relative overflow-hidden bg-black shadow-2xl ${
+              ref={previewChildRef}
+              className={`relative overflow-hidden bg-black shadow-2xl flex-none max-w-full max-h-full w-auto ${
                 isFullscreen
-                  ? "h-full aspect-[9/16]"
-                  : "aspect-[9/16] h-full max-h-[600px] rounded-2xl"
+                  ? "h-full mx-auto"
+                  : "h-full max-h-[600px] rounded-2xl"
               }`}
+              style={{ aspectRatio: aspectRatio }}
             >
             {videoPath && !videoError ? (
               <video
@@ -432,11 +493,13 @@ function EditorContent() {
                 className="absolute inset-0 h-full w-full object-cover"
                 playsInline
                 preload="auto"
-                muted
                 onLoadedMetadata={(e) => {
                   const vid = e.currentTarget;
                   if (vid.duration && isFinite(vid.duration)) {
                     setDuration(vid.duration);
+                  }
+                  if (vid.videoWidth && vid.videoHeight) {
+                    setAspectRatio(vid.videoWidth / vid.videoHeight);
                   }
                 }}
                 onTimeUpdate={(e) => {
@@ -491,11 +554,15 @@ function EditorContent() {
                       currentTime={currentTime}
                       start={hit.start}
                       end={hit.end}
+                      subtitleSize={subtitleSize}
+                      previewWidth={previewWidth}
                     />
                   ) : (
                     <CleanTemplate
                       text={hit.text}
                       shadowIntensity={shadowIntensity}
+                      subtitleSize={subtitleSize}
+                      previewWidth={previewWidth}
                     />
                   )
                 ) : (
@@ -537,10 +604,27 @@ function EditorContent() {
             </button>
           </div>
         </div>
+        
+        {/* Floating Collapse/Expand Sidebar Button */}
+        <button
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white border border-gray-200 shadow-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all hover:scale-105 active:scale-95"
+          title={isSidebarCollapsed ? "Expand Edit Panel" : "Collapse Edit Panel"}
+        >
+          {isSidebarCollapsed ? (
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+            </svg>
+          ) : (
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+            </svg>
+          )}
+        </button>
       </div>
 
-        {/* Right: Edit panel */}
-        <aside className="w-64 shrink-0 overflow-y-auto border-l border-gray-200 bg-white p-4 flex flex-col justify-between">
+      {/* Right: Edit panel */}
+      <aside className={`h-full border-l border-gray-200 bg-white flex flex-col justify-between shrink-0 transition-all duration-300 overflow-y-auto ${isSidebarCollapsed ? "w-0 border-l-0 p-0 overflow-hidden" : "w-64 p-4"}`}>
           <div className="space-y-4">
             {activeSub ? (
               <>
@@ -714,6 +798,35 @@ function EditorContent() {
                 <span>None</span>
                 <span>Subtle</span>
                 <span>Strong</span>
+              </div>
+            </div>
+
+            {/* Subtitle Size control */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[11px] font-semibold text-[#121212]">Font Size</label>
+                <span className="rounded-full bg-[#E6FFC8] px-2 py-0.5 text-[10px] font-bold text-[#121212]">{subtitleSize}px</span>
+              </div>
+
+              {/* Custom styled range slider */}
+              <div className="relative">
+                <input
+                  type="range"
+                  min={10}
+                  max={40}
+                  step={1}
+                  value={subtitleSize}
+                  onChange={(e) => setSubtitleSize(Number(e.target.value))}
+                  onMouseUp={(e) => updateSubtitleSize(Number((e.target as HTMLInputElement).value))}
+                  onTouchEnd={(e) => updateSubtitleSize(Number((e.target as HTMLInputElement).value))}
+                  className="glow-slider w-full"
+                  style={{ "--val": ((subtitleSize - 10) / 30) * 100 } as React.CSSProperties}
+                />
+              </div>
+              <div className="mt-1.5 flex justify-between text-[9px] font-medium text-[#79716B]">
+                <span>Small (10px)</span>
+                <span>Medium (25px)</span>
+                <span>Large (40px)</span>
               </div>
             </div>
           </div>
