@@ -260,13 +260,19 @@ export default function UploadPage() {
 
           <div className="flex gap-3">
             <button
-              onClick={() => router.push(`/dashboard/editor?id=${projectId}`)}
+              onClick={() => {
+                router.push(`/dashboard/editor?id=${projectId}`);
+                router.refresh();
+              }}
               className="flex-1 rounded-full bg-[#96FF1A] py-3 text-sm font-semibold text-[#121212] hover:brightness-95"
             >
               Review &amp; Edit Subtitles
             </button>
             <button
-              onClick={() => router.push(`/dashboard/export?id=${projectId}`)}
+              onClick={() => {
+                router.push(`/dashboard/export?id=${projectId}`);
+                router.refresh();
+              }}
               className="flex-1 rounded-full border border-gray-300 py-3 text-sm font-semibold text-[#121212] hover:bg-gray-50"
             >
               Export Now

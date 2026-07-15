@@ -4,6 +4,8 @@ import { Subtitle } from "@/lib/models/Subtitle";
 import { Project } from "@/lib/models/Project";
 import { getUserId } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 function cleanText(text: string): string {
   return text
     .replace(/[\\\/]/g, "")

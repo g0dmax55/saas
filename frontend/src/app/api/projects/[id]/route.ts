@@ -4,6 +4,8 @@ import { Project } from "@/lib/models/Project";
 import { Subtitle } from "@/lib/models/Subtitle";
 import { getUserId } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
