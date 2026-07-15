@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { CleanTemplate } from "@/components/templates/CleanTemplate";
+import { KaraokeTemplate } from "@/components/templates/KaraokeTemplate";
 
 type Sub = { id: string; start: number; end: number; text: string };
 
 const STYLES = [
-  { id: "clean", label: "Clean", preview: "text-white font-bold text-lg [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]" },
+  { id: "clean", label: "Clean", preview: "text-white font-bold text-sm [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]" },
+  { id: "karaoke", label: "Karaoke (Red Box)", preview: "font-extrabold text-[11px] text-white bg-red-600 px-2 py-0.5" },
 ];
 
 const FPS = 30;
@@ -40,9 +43,14 @@ function EditorContent() {
   const [duration, setDuration] = useState(24.0);
   const [saved, setSaved] = useState(false);
   const [videoPath, setVideoPath] = useState("");
+  const [shadowIntensity, setShadowIntensity] = useState(1);
+  const [subtitlePosition, setSubtitlePosition] = useState<number>(85);
+  const [videoError, setVideoError] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
 
   const active = subs.find((s) => s.id === activeSub);
-  const style = STYLES.find((s) => s.id === selectedStyle)!;
 
   const stepTime = useCallback(
     (dir: number, big = false) => {
@@ -94,6 +102,12 @@ function EditorContent() {
             setProjectName(projData.project.fileName || "");
             setVideoPath(projData.project.videoPath || "");
             setSelectedStyle(projData.project.style || "clean");
+            setShadowIntensity(projData.project.shadowIntensity ?? 3);
+            const rawPos = projData.project.subtitlePosition;
+            if (rawPos === "top") setSubtitlePosition(15);
+            else if (rawPos === "middle") setSubtitlePosition(50);
+            else if (rawPos === "bottom") setSubtitlePosition(85);
+            else setSubtitlePosition(typeof rawPos === "number" ? rawPos : 85);
           }
         }
       } catch {
@@ -103,6 +117,11 @@ function EditorContent() {
     load();
     return () => { cancelled = true; };
   }, [projectId]);
+
+  // Reset video error state when the video path changes
+  useEffect(() => {
+    setVideoError(false);
+  }, [videoPath]);
 
   // Save subtitles to API
   const saveSubtitles = async () => {
@@ -114,10 +133,57 @@ function EditorContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subtitles: payload }),
       });
+      await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shadowIntensity, subtitlePosition }),
+      });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch {
       // silent
+    }
+  };
+
+  const updateShadowIntensity = async (value: number) => {
+    setShadowIntensity(value);
+    if (!projectId) return;
+    try {
+      await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shadowIntensity: value }),
+      });
+    } catch (err) {
+      console.error("Failed to save shadow intensity:", err);
+    }
+  };
+
+  const updateSubtitlePosition = async (value: number) => {
+    setSubtitlePosition(value);
+    if (!projectId) return;
+    try {
+      await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subtitlePosition: value }),
+      });
+    } catch (err) {
+      console.error("Failed to save subtitle position:", err);
+    }
+  };
+
+  const updateStyle = async (value: string) => {
+    setSelectedStyle(value);
+    if (!projectId) return;
+    try {
+      await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ style: value }),
+      });
+    } catch (err) {
+      console.error("Failed to save style:", err);
     }
   };
 
@@ -158,8 +224,9 @@ function EditorContent() {
       }
     }
 
+    // Only use interval-based playback when there is no video (fallback gradient mode)
     let playTimer: ReturnType<typeof setInterval> | null = null;
-    if (isPlaying) {
+    if (isPlaying && !videoRef.current) {
       playTimer = setInterval(() => {
         setCurrentTime((prev) => {
           const next = prev + FRAME;
@@ -179,22 +246,68 @@ function EditorContent() {
     };
   }, [isPlaying, duration, stepTime, activeSub, jumpToActive]);
 
-  // Sync video playback
+  // Sync video play/pause via ref and update time smoothly at 60fps
   useEffect(() => {
-    const video = document.querySelector<HTMLVideoElement>(".preview-video");
+    const video = videoRef.current;
     if (!video) return;
+
+    let frameId: number;
+    const updateSmoothTime = () => {
+      setCurrentTime(video.currentTime);
+      frameId = requestAnimationFrame(updateSmoothTime);
+    };
+
     if (isPlaying) {
-      video.play().catch(() => {});
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn("Video play blocked:", err.message);
+          setIsPlaying(false);
+        });
+      }
+      frameId = requestAnimationFrame(updateSmoothTime);
     } else {
       video.pause();
     }
+
+    return () => {
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+      }
+    };
   }, [isPlaying]);
 
+  // Seek video when currentTime changes while paused (e.g. clicking timeline, arrow keys)
   useEffect(() => {
-    const video = document.querySelector<HTMLVideoElement>(".preview-video");
+    const video = videoRef.current;
     if (!video || isPlaying) return;
-    video.currentTime = currentTime;
+    // Only seek if the difference is significant to avoid micro-seek loops
+    if (Math.abs(video.currentTime - currentTime) > 0.05) {
+      video.currentTime = currentTime;
+    }
   }, [currentTime, isPlaying]);
+
+  // Fullscreen state listener
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    const container = previewContainerRef.current;
+    if (!container) return;
+
+    if (!document.fullscreenElement) {
+      container.requestFullscreen().catch((err) => {
+        console.error(`Error entering fullscreen: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
 
   const updateSub = (id: string, field: keyof Sub, value: string | number) => {
     setSubs((prev) => prev.map((s) => (s.id === id ? { ...s, [field]: value } : s)));
@@ -298,35 +411,119 @@ function EditorContent() {
 
         {/* Center: Preview */}
         <div className="flex flex-1 items-center justify-center bg-[#f0f0f0] p-4">
-          <div className="relative aspect-[9/16] h-full max-h-[600px] overflow-hidden rounded-2xl bg-black shadow-2xl">
-            {videoPath ? (
+          <div
+            ref={previewContainerRef}
+            className={`flex items-center justify-center ${
+              isFullscreen ? "w-full h-full bg-black" : "h-full w-full bg-transparent"
+            }`}
+          >
+            <div
+              className={`relative overflow-hidden bg-black shadow-2xl ${
+                isFullscreen
+                  ? "h-full aspect-[9/16]"
+                  : "aspect-[9/16] h-full max-h-[600px] rounded-2xl"
+              }`}
+            >
+            {videoPath && !videoError ? (
               <video
-                src={videoPath}
-                className="preview-video absolute inset-0 h-full w-full object-cover"
+                ref={videoRef}
+                key={videoPath}
+                src={videoPath.startsWith("/uploads/") ? `/api/videos/${videoPath.replace("/uploads/", "")}` : videoPath}
+                className="absolute inset-0 h-full w-full object-cover"
                 playsInline
                 preload="auto"
-                controls
+                muted
+                onLoadedMetadata={(e) => {
+                  const vid = e.currentTarget;
+                  if (vid.duration && isFinite(vid.duration)) {
+                    setDuration(vid.duration);
+                  }
+                }}
                 onTimeUpdate={(e) => {
-                  if (isPlaying) setCurrentTime(e.currentTarget.currentTime);
+                  if (isPlaying) {
+                    setCurrentTime(e.currentTarget.currentTime);
+                  }
+                }}
+                onEnded={() => {
+                  setIsPlaying(false);
+                  setCurrentTime(0);
+                }}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => {
+                  if (isPlaying) setIsPlaying(false);
+                }}
+                onError={() => {
+                  console.error("Video failed to load:", videoPath);
+                  setVideoError(true);
                 }}
               />
             ) : (
-              <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a2e] via-[#16213e] to-[#0f3460]" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#1a1a2e] via-[#16213e] to-[#0f3460]">
+                {videoError ? (
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-white/70 mb-2">Video failed to load</p>
+                    <button
+                      onClick={() => setVideoError(false)}
+                      className="rounded-full bg-[#96FF1A] px-4 py-1.5 text-xs font-semibold text-[#121212] hover:brightness-95"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : !videoPath ? (
+                  <p className="text-xs text-white/40">No video loaded</p>
+                ) : null}
+              </div>
             )}
 
-            <div className="absolute inset-x-0 bottom-16 flex justify-center px-4">
+            <div
+              className="absolute inset-x-0 flex justify-center px-4 pointer-events-none"
+              style={{
+                top: `${subtitlePosition}%`,
+                transform: "translateY(-50%)",
+              }}
+            >
               {(() => {
                 const hit = subs.find((s) => currentTime >= s.start && currentTime <= s.end);
                 return hit ? (
-                  <span className={`text-center text-sm font-semibold ${style.preview}`}>{hit.text}</span>
+                  selectedStyle === "karaoke" ? (
+                    <KaraokeTemplate
+                      text={hit.text}
+                      currentTime={currentTime}
+                      start={hit.start}
+                      end={hit.end}
+                    />
+                  ) : (
+                    <CleanTemplate
+                      text={hit.text}
+                      shadowIntensity={shadowIntensity}
+                    />
+                  )
                 ) : (
                   <span className="text-xs text-white/50">No caption at {formatTime(currentTime)}</span>
                 );
               })()}
             </div>
 
-            <div className="absolute top-3 right-3 rounded-md bg-black/60 px-2 py-0.5 font-mono text-[11px] text-white/60 backdrop-blur-sm">
-              {formatTime(currentTime)} / {formatTime(duration)}
+            <div className="absolute top-3 right-3 flex items-center gap-1.5 rounded-md bg-black/60 px-2.5 py-1 font-mono text-[11px] text-white/60 backdrop-blur-sm z-10">
+              <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFullscreen();
+                }}
+                className="ml-1 rounded p-0.5 text-white/70 hover:bg-white/20 hover:text-white transition-colors"
+                title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+              >
+                {isFullscreen ? (
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 14h6v6m0-6L4 20m16-6h-6v6m0-6l6 6M4 10h6V4m0 6L4 4m16 6h-6V4m0 6l6-6" />
+                  </svg>
+                ) : (
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                )}
+              </button>
             </div>
 
             <button onClick={() => setIsPlaying(!isPlaying)} className="absolute inset-0 flex items-center justify-center transition-colors hover:bg-black/10">
@@ -340,81 +537,187 @@ function EditorContent() {
             </button>
           </div>
         </div>
+      </div>
 
         {/* Right: Edit panel */}
-        {activeSub && (
-          <aside className="w-64 shrink-0 overflow-y-auto border-l border-gray-200 bg-white p-4">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#79716B]">Correct Caption</p>
-              <span className="font-mono text-[10px] text-[#79716B]">#{active?.id}</span>
+        <aside className="w-64 shrink-0 overflow-y-auto border-l border-gray-200 bg-white p-4 flex flex-col justify-between">
+          <div className="space-y-4">
+            {activeSub ? (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#79716B]">Correct Caption</p>
+                  <span className="font-mono text-[10px] text-[#79716B]">#{active?.id}</span>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[11px] font-medium text-[#79716B] mb-1">Found a mistake?</label>
+                    <textarea
+                      value={active?.text ?? ""}
+                      onChange={(e) => activeSub && updateSub(activeSub, "text", e.target.value)}
+                      rows={3}
+                      className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-[#121212] outline-none focus:border-[#96FF1A] focus:ring-1 focus:ring-[#96FF1A]"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-medium text-[#79716B] mb-1">Start (s)</label>
+                      <input type="number" value={active?.start ?? 0} onChange={(e) => activeSub && updateSub(activeSub, "start", parseFloat(e.target.value) || 0)} step="0.001" min="0" max={duration} className="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-[#96FF1A]" />
+                      <span className="mt-0.5 block text-[10px] text-[#79716B] font-mono">{formatTime(active?.start ?? 0)}</span>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-medium text-[#79716B] mb-1">End (s)</label>
+                      <input type="number" value={active?.end ?? 0} onChange={(e) => activeSub && updateSub(activeSub, "end", parseFloat(e.target.value) || 0)} step="0.001" min="0" max={duration} className="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-[#96FF1A]" />
+                      <span className="mt-0.5 block text-[10px] text-[#79716B] font-mono">{formatTime(active?.end ?? 0)}</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={setActiveStart}
+                      title="Set start at playhead (S)"
+                      className="flex-1 rounded-lg border border-gray-200 py-1.5 text-[10px] font-medium text-[#121212] hover:bg-gray-50"
+                    >
+                      Set start
+                    </button>
+                    <button
+                      onClick={setActiveEnd}
+                      title="Set end at playhead (E)"
+                      className="flex-1 rounded-lg border border-gray-200 py-1.5 text-[10px] font-medium text-[#121212] hover:bg-gray-50"
+                    >
+                      Set end
+                    </button>
+                  </div>
+                  <button
+                    onClick={splitSub}
+                    className="w-full rounded-lg border border-gray-200 py-1.5 text-[10px] font-medium text-[#121212] hover:bg-gray-50"
+                    title="Split caption at playhead"
+                  >
+                    Split at playhead
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="rounded-xl border border-dashed border-gray-200 p-4 text-center">
+                <p className="text-xs text-[#79716B]">Select a subtitle segment on the left to edit text or timings.</p>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-6 border-t border-gray-100 pt-4 space-y-4">
+            <div>
+              <label className="block text-[11px] font-medium text-[#79716B] mb-2">Style</label>
+              <div className="space-y-1.5">
+                {STYLES.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => updateStyle(s.id)}
+                    className={`w-full overflow-hidden rounded-lg transition-all ${selectedStyle === s.id ? "ring-2 ring-[#96FF1A]" : "ring-1 ring-gray-200 hover:ring-gray-300"}`}
+                  >
+                    <div className="relative flex h-16 items-center justify-center bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]">
+                      <span className={`text-center text-sm ${s.preview}`}>Sample caption</span>
+                    </div>
+                    <div className="bg-white px-3 py-1 text-left text-[10px] font-medium text-[#79716B]">
+                      {s.label}
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[11px] font-medium text-[#79716B] mb-1">Found a mistake?</label>
-                <textarea
-                  value={active?.text ?? ""}
-                  onChange={(e) => activeSub && updateSub(activeSub, "text", e.target.value)}
-                  rows={3}
-                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-[#121212] outline-none focus:border-[#96FF1A] focus:ring-1 focus:ring-[#96FF1A]"
+
+            {/* Subtitle Position control */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[11px] font-semibold text-[#121212]">Vertical Position</label>
+                <span className="rounded-full bg-[#E6FFC8] px-2 py-0.5 text-[10px] font-bold text-[#121212]">{subtitlePosition}%</span>
+              </div>
+              
+              {/* Custom styled range slider for position */}
+              <div className="relative mb-3">
+                <input
+                  type="range"
+                  min={5}
+                  max={95}
+                  step={1}
+                  value={subtitlePosition}
+                  onChange={(e) => setSubtitlePosition(Number(e.target.value))}
+                  onMouseUp={(e) => updateSubtitlePosition(Number((e.target as HTMLInputElement).value))}
+                  onTouchEnd={(e) => updateSubtitlePosition(Number((e.target as HTMLInputElement).value))}
+                  className="glow-slider w-full"
+                  style={{ "--val": ((subtitlePosition - 5) / 90) * 100 } as React.CSSProperties}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-medium text-[#79716B] mb-1">Start (s)</label>
-                  <input type="number" value={active?.start ?? 0} onChange={(e) => activeSub && updateSub(activeSub, "start", parseFloat(e.target.value) || 0)} step="0.001" min="0" max={duration} className="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-[#96FF1A]" />
-                  <span className="mt-0.5 block text-[10px] text-[#79716B] font-mono">{formatTime(active?.start ?? 0)}</span>
-                </div>
-                <div>
-                  <label className="block text-[11px] font-medium text-[#79716B] mb-1">End (s)</label>
-                  <input type="number" value={active?.end ?? 0} onChange={(e) => activeSub && updateSub(activeSub, "end", parseFloat(e.target.value) || 0)} step="0.001" min="0" max={duration} className="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs outline-none focus:border-[#96FF1A]" />
-                  <span className="mt-0.5 block text-[10px] text-[#79716B] font-mono">{formatTime(active?.end ?? 0)}</span>
-                </div>
-              </div>
-              <div className="flex gap-1.5">
-                <button
-                  onClick={setActiveStart}
-                  title="Set start at playhead (S)"
-                  className="flex-1 rounded-lg border border-gray-200 py-1.5 text-[10px] font-medium text-[#121212] hover:bg-gray-50"
-                >
-                  Set start
-                </button>
-                <button
-                  onClick={setActiveEnd}
-                  title="Set end at playhead (E)"
-                  className="flex-1 rounded-lg border border-gray-200 py-1.5 text-[10px] font-medium text-[#121212] hover:bg-gray-50"
-                >
-                  Set end
-                </button>
-              </div>
-              <button
-                onClick={splitSub}
-                className="w-full rounded-lg border border-gray-200 py-1.5 text-[10px] font-medium text-[#121212] hover:bg-gray-50"
-                title="Split caption at playhead"
-              >
-                Split at playhead
-              </button>
-              <div>
-                <label className="block text-[11px] font-medium text-[#79716B] mb-2">Style</label>
-                <div className="space-y-1.5">
-                  {STYLES.map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => setSelectedStyle(s.id)}
-                      className={`w-full overflow-hidden rounded-lg transition-all ${selectedStyle === s.id ? "ring-2 ring-[#96FF1A]" : "ring-1 ring-gray-200 hover:ring-gray-300"}`}
-                    >
-                      <div className="relative flex h-16 items-center justify-center bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]">
-                        <span className={`text-center text-sm ${s.preview}`}>Sample caption</span>
-                      </div>
-                      <div className="bg-white px-3 py-1 text-left text-[10px] font-medium text-[#79716B]">
-                        {s.label}
-                      </div>
-                    </button>
-                  ))}
-                </div>
+
+              {/* Quick Preset Buttons */}
+              <div className="grid grid-cols-3 gap-1.5">
+                {[
+                  { label: "Top", val: 15 },
+                  { label: "Middle", val: 50 },
+                  { label: "Bottom", val: 85 }
+                ].map((preset) => (
+                  <button
+                    key={preset.label}
+                    onClick={() => updateSubtitlePosition(preset.val)}
+                    className={`rounded-lg border py-1.5 text-[10px] font-semibold transition-all ${
+                      subtitlePosition === preset.val
+                        ? "border-[#96FF1A] bg-[#E6FFC8]/20 text-[#121212]"
+                        : "border-gray-200 text-[#79716B] hover:border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
               </div>
             </div>
-          </aside>
-        )}
+
+            {/* Shadow / Glow control */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[11px] font-semibold text-[#121212]">Outer glow</label>
+                <span className="rounded-full bg-[#E6FFC8] px-2 py-0.5 text-[10px] font-bold text-[#121212]">{shadowIntensity}px</span>
+              </div>
+
+              {/* Live glow preview swatch */}
+              <div className="mb-3 flex items-center justify-center rounded-lg bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] py-3">
+                <span
+                  className="text-sm font-bold text-white"
+                  style={{
+                    textShadow: shadowIntensity > 0
+                      ? [
+                          `0 0 ${shadowIntensity * 0.5}px rgba(0,0,0,0.9)`,
+                          `0 0 ${shadowIntensity * 1}px rgba(0,0,0,0.7)`,
+                          `0 0 ${shadowIntensity * 2}px rgba(0,0,0,0.5)`,
+                          `0 0 ${shadowIntensity * 3}px rgba(0,0,0,0.3)`,
+                          `0 1px 2px rgba(0,0,0,0.9)`,
+                        ].join(", ")
+                      : "none",
+                  }}
+                >
+                  Glow preview
+                </span>
+              </div>
+
+              {/* Custom styled range slider */}
+              <div className="relative">
+                <input
+                  type="range"
+                  min={0}
+                  max={10}
+                  step={1}
+                  value={shadowIntensity}
+                  onChange={(e) => setShadowIntensity(Number(e.target.value))}
+                  onMouseUp={(e) => updateShadowIntensity(Number((e.target as HTMLInputElement).value))}
+                  onTouchEnd={(e) => updateShadowIntensity(Number((e.target as HTMLInputElement).value))}
+                  className="glow-slider w-full"
+                  style={{ "--val": shadowIntensity * 10 } as React.CSSProperties}
+                />
+              </div>
+              <div className="mt-1.5 flex justify-between text-[9px] font-medium text-[#79716B]">
+                <span>None</span>
+                <span>Subtle</span>
+                <span>Strong</span>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
 
       {/* Zoom bar */}

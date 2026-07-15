@@ -43,3 +43,36 @@ export async function DELETE(
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const userId = await getUserId();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    await connectDB();
+    const { id } = await params;
+    const body = await request.json();
+
+    const update: Record<string, unknown> = {};
+    if (body.shadowIntensity !== undefined) update.shadowIntensity = body.shadowIntensity;
+    if (body.style !== undefined) update.style = body.style;
+    if (body.subtitlePosition !== undefined) update.subtitlePosition = body.subtitlePosition;
+    if (body.subtitleSize !== undefined) update.subtitleSize = body.subtitleSize;
+
+    const project = await Project.findOneAndUpdate(
+      { _id: id, userId },
+      { $set: update },
+      { new: true }
+    ).lean();
+
+    if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    return NextResponse.json({ project });
+  } catch (error) {
+    console.error("PATCH project error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

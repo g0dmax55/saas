@@ -24,14 +24,56 @@ function formatAssTime(seconds: number): string {
   return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}.${String(cs).padStart(2, "0")}`;
 }
 
-// ASS style definitions using BorderStyle=3 (opaque box) for pill-like backgrounds
-function getStyleDef(style: string, scale: number, height: number): string {
-  const fs = Math.round(14 * scale);
-  const marginV = Math.round(height * 0.12);
+// ASS style definitions with Outline + Shadow (BorderStyle=1) for glow effect
+function getStyleDef(
+  style: string,
+  scale: number,
+  height: number,
+  shadowIntensity: number,
+  subtitlePosition: string | number,
+  subtitleSize: number
+): string {
+  const baseSize = style === "karaoke" ? (subtitleSize || 14) * 0.857 : (subtitleSize || 16) * 0.9375;
+  const fs = Math.round(baseSize * scale);
+  const ol = shadowIntensity > 0 ? Math.round(1 * scale) : 0; // No outline if glow is 0
+  const sh = shadowIntensity > 0 ? Math.round(1.5 * scale) : 0; // No shadow if glow is 0
   const styleName = style.charAt(0).toUpperCase() + style.slice(1);
 
-  // Clean: white bold text, thin outline + subtle shadow for readability on any bg
-  return `Style: ${styleName},DejaVu Sans,${fs},&H00FFFFFF,&H000000FF,&H00000000,&H00000000,1,0,0,0,100,100,0,0,1,1,1,2,10,10,${marginV},1`;
+  // If it's a legacy string, map it first
+  let posPct = 85;
+  if (typeof subtitlePosition === "number") {
+    posPct = subtitlePosition;
+  } else if (subtitlePosition === "top") {
+    posPct = 15;
+  } else if (subtitlePosition === "middle") {
+    posPct = 50;
+  }
+
+  // ASS Alignment: 2=bottom-center, 5=middle-center, 8=top-center
+  let alignment = 2;
+  let marginV = Math.round(height * 0.12);
+
+  if (posPct < 45) {
+    alignment = 8; // top-center
+    marginV = Math.round(height * (posPct / 100));
+  } else if (posPct > 55) {
+    alignment = 2; // bottom-center
+    marginV = Math.round(height * ((100 - posPct) / 100));
+  } else {
+    alignment = 5; // middle-center
+    marginV = 0;
+  }
+
+  if (style === "karaoke") {
+    // BorderStyle=3 (Opaque box), Outline=boxPadding (size of box padding), Shadow=0 (no shadow)
+    // PrimaryColour=&H44FFFFFF (dimmed white text), SecondaryColour=&H00FFFFFF (bright white highlight text)
+    // OutlineColour=&HFF000000 (transparent border), BackColour=&H000000FF (solid red background box)
+    const boxPadding = Math.round(3.5 * scale);
+    return `Style: ${styleName},Poppins,${fs},&H44FFFFFF,&H00FFFFFF,&HFF000000,&H000000FF,1,0,0,0,100,100,0,0,3,${boxPadding},0,${alignment},10,10,${marginV},1`;
+  }
+
+  // Bold=1, Font=Inter, Outline/Back alpha=&H33 (80% opacity black matching rgba(0,0,0,0.8))
+  return `Style: ${styleName},Inter,${fs},&H00FFFFFF,&H000000FF,&H33000000,&H33000000,1,0,0,0,100,100,0,0,1,${ol},${sh},${alignment},10,10,${marginV},1`;
 }
 
 function buildAss(
@@ -39,9 +81,12 @@ function buildAss(
   style: string,
   width: number,
   height: number,
+  shadowIntensity: number,
+  subtitlePosition: string | number,
+  subtitleSize: number
 ): string {
   const scale = width / 360;
-  const styleDef = getStyleDef(style, scale, height);
+  const styleDef = getStyleDef(style, scale, height, shadowIntensity, subtitlePosition, subtitleSize);
   const styleName = style.charAt(0).toUpperCase() + style.slice(1);
 
   let ass = `[Script Info]
@@ -62,7 +107,45 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
   for (const s of subtitles) {
     const start = formatAssTime(s.startTime);
     const end = formatAssTime(s.endTime);
-    const text = cleanText(s.text).replace(/\n\r/g, "\\N");
+    const cleaned = cleanText(s.text).replace(/\n\r/g, "\\N");
+    // Prepend Gaussian blur tag to emulate CSS text-shadow blur
+    const blurTag = shadowIntensity > 0 ? `{\\blur${Math.round(shadowIntensity * scale / 2)}}` : "";
+    
+    let text = cleaned;
+    if (style === "karaoke") {
+      const words = cleaned.split(" ");
+      const totalChars = cleaned.length || 1;
+      const segmentDuration = s.endTime - s.startTime;
+      let wordAss = "";
+      
+      // Track remaining duration to avoid roundoff drift
+      let remainingDurationCs = Math.round(segmentDuration * 100);
+      
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i] + (i < words.length - 1 ? " " : "");
+        const wordChars = word.length;
+        
+        let wordDurCs = 0;
+        if (i === words.length - 1) {
+          wordDurCs = remainingDurationCs;
+        } else {
+          wordDurCs = Math.round((wordChars / totalChars) * segmentDuration * 100);
+          remainingDurationCs -= wordDurCs;
+        }
+        // Ensure duration is at least 1 centisecond
+        wordDurCs = Math.max(1, wordDurCs);
+        
+        if (i === 0) {
+          wordAss += `{\\4a&H00&\\kf${wordDurCs}}${word}`;
+        } else {
+          wordAss += `{\\4a&HFF&\\kf${wordDurCs}}{\\4a&H00&}${word}`;
+        }
+      }
+      text = `{\\4a&HFF&}${blurTag}${wordAss}`;
+    } else {
+      text = `${blurTag}${cleaned}`;
+    }
+    
     ass += `Dialogue: 0,${start},${end},${styleName},,0,0,0,,${text}\n`;
   }
 
@@ -120,7 +203,7 @@ export async function GET(
       if (w && h) { width = w; height = h; }
     } catch { /* defaults */ }
 
-    const assContent = buildAss(subtitles, styleName, width, height);
+    const assContent = buildAss(subtitles, styleName, width, height, project.shadowIntensity ?? 3, project.subtitlePosition || "bottom", project.subtitleSize || 16);
     await writeFile(assPath, assContent, "utf-8");
 
     await runFfmpeg([
