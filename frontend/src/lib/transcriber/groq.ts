@@ -74,7 +74,8 @@ export const groqTranscriber: Transcriber = {
     const fileSize = fs.statSync(filePath).size / (1024 * 1024);
     let audioPath = filePath;
 
-    if (filePath.endsWith(".mp4") || filePath.endsWith(".mov") || filePath.endsWith(".webm") || filePath.endsWith(".avi") || fileSize > 24) {
+    const lowerPath = filePath.toLowerCase();
+    if (lowerPath.endsWith(".mp4") || lowerPath.endsWith(".mov") || lowerPath.endsWith(".webm") || lowerPath.endsWith(".avi") || fileSize > 24) {
       audioPath = await extractAudio(filePath);
     }
 
@@ -99,7 +100,7 @@ export const groqTranscriber: Transcriber = {
       text: String(s.text ?? "").trim(),
     }));
 
-    let timeOffset = 0;
+    let timeOffset = Number(raw.duration ?? 0);
 
     // Step 4: If multiple chunks, transcribe each and merge with offset
     if (chunks.length > 1) {
@@ -123,7 +124,7 @@ export const groqTranscriber: Transcriber = {
         }));
 
         segments = segments.concat(chunkSegments);
-        timeOffset += Number(raw.duration ?? 0);
+        timeOffset += Number(chunkRaw.duration ?? 0);
 
         fs.unlink(chunks[i], () => {});
       }
@@ -136,7 +137,7 @@ export const groqTranscriber: Transcriber = {
 
     return {
       language: String(raw.language ?? "unknown"),
-      duration: Number(raw.duration ?? 0) * chunks.length,
+      duration: timeOffset,
       segments,
     };
   },
